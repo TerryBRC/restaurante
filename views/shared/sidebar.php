@@ -110,6 +110,13 @@ $nombreApp = $configModel->get('nombre_app');
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link text-white <?php echo strpos($currentPage, 'pedidos') !== false ? 'active' : ''; ?>" 
+                   href="<?php echo BASE_URL; ?>pedidos">
+                    <i class="bi bi-bag-check"></i>
+                    Pedidos
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link text-white <?php echo strpos(
                     $currentPage, 'reportes') !== false ? 'active' : ''; ?>" 
                    href="<?php echo BASE_URL; ?>reportes">

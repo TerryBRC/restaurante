@@ -53,6 +53,15 @@ $router->add('caja/cierre', 'CajaController', 'cierre');
 $router->add('movimientos', 'MovimientoController', 'index');
 $router->add('movimientos/registrar', 'MovimientoController', 'registrar');
 
+// Pedidos (lista y ver)
+$router->add('pedidos', 'PedidoController', 'index');
+$router->add('pedidos/ver', 'PedidoController', 'ver');
+// Crear nuevos pedidos
+$router->add('pedidos/nuevo', 'PedidoController', 'nuevo');
+$router->add('pedidos/crear', 'PedidoController', 'crear');
+// Endpoint para registrar pagos de pedidos
+$router->add('pedidos/pagar', 'PedidoController', 'pagar');
+
 $router->add('reportes', 'ReporteController', 'index');
 $router->add('reportes/ventas_dia', 'ReporteController', 'ventas_dia');
 $router->add('reportes/productos_vendidos', 'ReporteController', 'productos_vendidos');

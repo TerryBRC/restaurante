@@ -173,6 +173,39 @@ CREATE TABLE IF NOT EXISTS `pagos` (
   CONSTRAINT `fk_pagos_venta` FOREIGN KEY (`ID_Venta`) REFERENCES `ventas` (`ID_Venta`) ON DELETE CASCADE
 );
 
+
+CREATE TABLE pedidos (
+ID_Pedido INT AUTO_INCREMENT PRIMARY KEY,
+tipo_entrega ENUM('local','para_llevar','recoger','delivery') NOT NULL DEFAULT 'local',
+nombre_cliente VARCHAR(150) DEFAULT NULL,
+telefono VARCHAR(50) DEFAULT NULL,
+direccion VARCHAR(255) DEFAULT NULL,
+notas TEXT DEFAULT NULL,
+fecha_creado DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+fecha_actualizado DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE pedido_detalles (
+ID_Detalle_Pedido INT AUTO_INCREMENT PRIMARY KEY,
+ID_Pedido INT NOT NULL,
+ID_Producto INT NOT NULL,
+Cantidad INT NOT NULL DEFAULT 1,
+Precio_Unitario DECIMAL(12,2) NOT NULL,
+Subtotal DECIMAL(12,2) NOT NULL,
+preparacion VARCHAR(255) DEFAULT NULL,
+fecha_creado DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+CONSTRAINT fk_pedido_det_pedido FOREIGN KEY (ID_Pedido) REFERENCES pedidos(ID_Pedido) ON DELETE CASCADE,
+CONSTRAINT fk_pedido_det_producto FOREIGN KEY (ID_Producto) REFERENCES productos(ID_Producto) ON DELETE RESTRICT
+);
+
+CREATE VIEW pedidos_view AS
+SELECT p.ID_Pedido, p.tipo_entrega, p.nombre_cliente, p.telefono, p.fecha_creado,
+  COALESCE(SUM(pd.Subtotal),0) AS total_pedido
+FROM pedidos p
+LEFT JOIN pedido_detalles pd ON pd.ID_Pedido = p.ID_Pedido
+GROUP BY p.ID_Pedido;
+
+
 DELIMITER ;;
 CREATE PROCEDURE `sp_AddProduct`(
     IN p_nombre VARCHAR(100),
