@@ -160,9 +160,10 @@ if (!isset($moneda)) {
                                 <span>TOTAL</span><span id="total-venta" class="text-primary"><?php echo htmlspecialchars($moneda) . number_format($totalConServicio, 2); ?></span>
                             </li>
                         </ul>
-                        <a href="<?php echo BASE_URL; ?>mesas/dividir_cuenta?id_mesa=<?php echo $mesa['ID_Mesa']; ?>" class="btn btn-outline-primary mb-3">
-                            <i class="bi bi-scissors"></i> Dividir cuenta
-                        </a>
+                        <!-- Dividir cuenta deshabilitado temporalmente -->
+                        <button class="btn btn-outline-secondary mb-3" disabled title="Función deshabilitada"> 
+                            <i class="bi bi-scissors"></i> Dividir cuenta (deshabilitado)
+                        </button>
                         <a href="<?php echo BASE_URL; ?>imprimir_ticket_pre_factura.php?id_mesa=<?php echo $mesa['ID_Mesa']; ?>" class="btn btn-warning mb-3 ms-2">
                             <i class="bi bi-receipt"></i> Pre-Facturas
                         </a>

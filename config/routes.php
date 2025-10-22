@@ -39,7 +39,8 @@ $router->add('comanda/liberar', 'ComandaAjaxController', 'liberarMesa');
 $router->add('user/perfil', 'UserController', 'perfil');
 $router->add('user/update', 'UserController', 'actualizarPerfil');
 
-$router->add('mesas/dividir_cuenta', 'MesaController', 'dividirCuenta');
+// Ruta deshabilitada: dividir cuenta temporalmente desactivada. Para re-habilitar, descomentar.
+// $router->add('mesas/dividir_cuenta', 'MesaController', 'dividirCuenta');
 
 $router->add('mesas/procesar_mesa', 'MesaController', 'procesarMesa');
 // Endpoints added for trasladar feature
