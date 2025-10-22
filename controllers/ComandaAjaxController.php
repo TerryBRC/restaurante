@@ -203,12 +203,15 @@ class ComandaAjaxController extends BaseController {
                         $contenidoBarra .= "--------------------------\n\n";
                         $contenidoCocina .= "--------------------------\n\n";
 
-                        // Intentar imprimir (ImpresoraHelper valida usar_impresora_* en config)
+                        // Printing moved to central endpoint `comandas/imprimirComanda`
+                        // To avoid duplicate prints, do not call ImpresoraHelper here.
                         if (trim($contenidoBarra) !== "\n====== COMANDA BARRA ======\n") {
-                            @ImpresoraHelper::imprimir('impresora_barra', $contenidoBarra);
+                            error_log('ComandaAjaxController: prepared barra content (printing skipped here)');
+                            // @ImpresoraHelper::imprimir('impresora_barra', $contenidoBarra);
                         }
                         if (trim($contenidoCocina) !== "\n====== COMANDA COCINA ======\n") {
-                            @ImpresoraHelper::imprimir('impresora_cocina', $contenidoCocina);
+                            error_log('ComandaAjaxController: prepared cocina content (printing skipped here)');
+                            // @ImpresoraHelper::imprimir('impresora_cocina', $contenidoCocina);
                         }
                     }
                 } catch (Exception $e) {
