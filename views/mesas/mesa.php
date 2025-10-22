@@ -530,13 +530,15 @@ function initProductButtons() {
             productoSeleccionadoPrecio = precio;
             document.getElementById('inputCantidadProducto').value = 1;
             // Mostrar campo preparación si corresponde
-            if (isFoodAttr !== null) {
-                if (isFoodAttr === '1' || isFoodAttr === 'true') {
-                    document.getElementById('preparacionContainer').style.display = '';
-                } else {
-                    document.getElementById('preparacionContainer').style.display = 'none';
-                    document.getElementById('inputPreparacion').value = '';
-                }
+            // Permitir preparación también para ciertas categorías de bebidas (ej. cockteles)
+            const allowPrepCats = ['cockteles','coctel','cocktail','cocktails','Cockteles','Cocktail','Cocktails','Coctel'];
+            const catLower = (categoria || '').toLowerCase().trim();
+            const shouldShowPrep = (isFoodAttr !== null && (isFoodAttr === '1' || isFoodAttr === 'true')) || allowPrepCats.includes(catLower);
+            if (shouldShowPrep) {
+                document.getElementById('preparacionContainer').style.display = '';
+            } else {
+                document.getElementById('preparacionContainer').style.display = 'none';
+                document.getElementById('inputPreparacion').value = '';
             }
             const modal = new bootstrap.Modal(document.getElementById('modalCantidadProducto'));
             modal.show();
