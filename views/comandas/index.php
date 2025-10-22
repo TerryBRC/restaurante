@@ -61,11 +61,12 @@
         </main>
     </div>
 </div>
-<script>
+            <?php require_once dirname(__DIR__, 2) . '/config/base_url.php'; ?>
+            <script>
 function imprimirComandaPorTipo(idMesa, tipo) {
     // tipo: 1 = Barra, 0 = Cocina
     const tipoStr = tipo == 1 ? 'barra' : 'cocina';
-    fetch('comandas/imprimirComanda', {
+    fetch('<?php echo BASE_URL; ?>comandas/imprimirComanda', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id_mesa: idMesa, tipo: tipoStr })
