@@ -66,6 +66,7 @@ $router->add('reportes', 'ReporteController', 'index');
 $router->add('reportes/ventas_dia', 'ReporteController', 'ventas_dia');
 $router->add('reportes/productos_vendidos', 'ReporteController', 'productos_vendidos');
 $router->add('reportes/cierre_caja', 'ReporteController', 'cierre_caja');
+$router->add('reportes/cierre_ventas_egresos', 'ReportesBridgeController', 'cierre_ventas_egresos');
 $router->add('reportes/cierre_caja_export', 'ReporteController', 'cierre_caja_export');
 $router->add('reportes/inventario', 'ReporteController', 'inventario');
 $router->add('reportes/imprimir_ticket_productos_vendidos', 'ReporteController', 'imprimir_ticket_productos_vendidos');
