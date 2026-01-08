@@ -54,7 +54,12 @@ class ReporteController extends BaseController {
         $movModel = new MovimientoModel();
         $movimientos = $movModel->obtenerMovimientos(null, $fecha, $fecha);
 
-        $this->render('views/reportes/cierre_caja.php', compact('ventas', 'fecha', 'movimientos'));
+        // Obtener pedidos del día
+        require_once __DIR__ . '/../models/PedidoModel.php';
+        $pedidoModel = new PedidoModel();
+        $pedidos = $pedidoModel->getPedidosByFecha($fecha);
+
+        $this->render('views/reportes/cierre_caja.php', compact('ventas', 'fecha', 'movimientos', 'pedidos'));
     }
 
     public function cierre_caja_export() {
@@ -66,6 +71,11 @@ class ReporteController extends BaseController {
         require_once __DIR__ . '/../models/MovimientoModel.php';
         $movModel = new MovimientoModel();
         $movimientos = $movModel->obtenerMovimientos(null, $fecha, $fecha);
+
+        // Obtener pedidos del día
+        require_once __DIR__ . '/../models/PedidoModel.php';
+        $pedidoModel = new PedidoModel();
+        $pedidos = $pedidoModel->getPedidosByFecha($fecha);
 
         // Render view into a string
         ob_start();

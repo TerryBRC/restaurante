@@ -189,6 +189,62 @@
     <?php else: ?>
         <div class="alert alert-info">No hay ventas registradas para esta fecha.</div>
     <?php endif; ?>
+
+    <h5 class="mb-3 mt-5">Detalle de Pedidos</h5>
+    <?php 
+    $granTotalPedidos = 0; 
+    $granPagadoPedidos = 0;
+    $granRestantePedidos = 0;
+    if (isset($pedidos) && $pedidos && count($pedidos) > 0): 
+        foreach ($pedidos as $pedido) {
+            $granTotalPedidos += (float)($pedido['total_pedido'] ?? 0);
+            $granPagadoPedidos += (float)($pedido['pagado'] ?? 0);
+            $granRestantePedidos += (float)($pedido['restante'] ?? 0);
+        }
+    ?>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th># Pedido</th>
+                    <th>Fecha/Hora</th>
+                    <th>Cliente</th>
+                    <th>Tipo Entrega</th>
+                    <th>Total</th>
+                    <th>Pagado</th>
+                    <th>Restante</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($pedidos as $pedido): ?>
+                <tr>
+                    <td><?= (int)$pedido['ID_Pedido'] ?></td>
+                    <td><?= htmlspecialchars($pedido['fecha_creado']) ?></td>
+                    <td><?= htmlspecialchars($pedido['nombre_cliente'] ?? 'N/A') ?></td>
+                    <td><?= htmlspecialchars($pedido['tipo_entrega'] ?? 'N/A') ?></td>
+                    <td>C$ <?= number_format($pedido['total_pedido'] ?? 0, 2) ?></td>
+                    <td>C$ <?= number_format($pedido['pagado'] ?? 0, 2) ?></td>
+                    <td class="<?= ($pedido['restante'] ?? 0) > 0 ? 'text-danger fw-bold' : 'text-success' ?>">
+                        C$ <?= number_format($pedido['restante'] ?? 0, 2) ?>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+            <tfoot>
+                <tr class="table-success">
+                    <th colspan="4" class="text-end">Totales:</th>
+                    <th>C$ <?= number_format($granTotalPedidos, 2) ?></th>
+                    <th>C$ <?= number_format($granPagadoPedidos, 2) ?></th>
+                    <th class="<?= $granRestantePedidos > 0 ? 'text-danger fw-bold' : 'text-success' ?>">
+                        C$ <?= number_format($granRestantePedidos, 2) ?>
+                    </th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <?php else: ?>
+        <div class="alert alert-info">No hay pedidos registrados para esta fecha.</div>
+    <?php endif; ?>
     <a href="<?= BASE_URL ?>reportes" class="btn btn-secondary btn-sm mt-3">Volver a reportes</a>
     <a href="<?= BASE_URL ?>imprimir_ticket_cierre.php?fecha=<?= htmlspecialchars($fecha) ?>" class="btn btn-primary btn-sm mt-3">Imprimir Ticket Cierre</a>
     <a href="<?= BASE_URL ?>reportes/cierre_caja_export?fecha=<?= htmlspecialchars($fecha) ?>" class="btn btn-outline-secondary btn-sm mt-3 ms-2">Exportar cierre (HTML)</a>

@@ -104,5 +104,55 @@ require_once dirname(__DIR__, 2) . '/config/base_url.php';
         <p>No hay ventas registradas en esta fecha.</p>
     <?php endif; ?>
 
+    <h4>Detalle de Pedidos</h4>
+    <?php 
+    $granTotalPedidos = 0; 
+    $granPagadoPedidos = 0;
+    $granRestantePedidos = 0;
+    if (isset($pedidos) && $pedidos && count($pedidos) > 0): 
+        foreach ($pedidos as $pedido) {
+            $granTotalPedidos += (float)($pedido['total_pedido'] ?? 0);
+            $granPagadoPedidos += (float)($pedido['pagado'] ?? 0);
+            $granRestantePedidos += (float)($pedido['restante'] ?? 0);
+        }
+    ?>
+    <table>
+        <thead>
+            <tr>
+                <th># Pedido</th>
+                <th>Fecha/Hora</th>
+                <th>Cliente</th>
+                <th>Tipo Entrega</th>
+                <th>Total</th>
+                <th>Pagado</th>
+                <th>Restante</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($pedidos as $pedido): ?>
+            <tr>
+                <td><?= (int)$pedido['ID_Pedido'] ?></td>
+                <td><?= htmlspecialchars($pedido['fecha_creado']) ?></td>
+                <td><?= htmlspecialchars($pedido['nombre_cliente'] ?? 'N/A') ?></td>
+                <td><?= htmlspecialchars($pedido['tipo_entrega'] ?? 'N/A') ?></td>
+                <td class="right">C$ <?= number_format($pedido['total_pedido'] ?? 0, 2) ?></td>
+                <td class="right">C$ <?= number_format($pedido['pagado'] ?? 0, 2) ?></td>
+                <td class="right"><b>C$ <?= number_format($pedido['restante'] ?? 0, 2) ?></b></td>
+            </tr>
+            <?php endforeach; ?>
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="4">Totales:</th>
+                <th class="right">C$ <?= number_format($granTotalPedidos, 2) ?></th>
+                <th class="right">C$ <?= number_format($granPagadoPedidos, 2) ?></th>
+                <th class="right"><b>C$ <?= number_format($granRestantePedidos, 2) ?></b></th>
+            </tr>
+        </tfoot>
+    </table>
+    <?php else: ?>
+        <p>No hay pedidos registrados en esta fecha.</p>
+    <?php endif; ?>
+
 </body>
 </html>
