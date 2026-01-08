@@ -10,6 +10,7 @@
             <button class="btn btn-sm btn-outline-primary" type="submit">Ver</button>
         </form>
     </div>
+    <a href="<?= BASE_URL ?>pedidos/nuevo" class="btn btn-sm btn-primary ms-2">Nuevo Pedido</a>
 </div>
 <table class="table table-striped">
     <thead>
@@ -36,7 +37,7 @@
             <td>
                 <?php
                     $rest = isset($p['restante']) ? floatval($p['restante']) : (isset($p['total_pedido']) ? floatval($p['total_pedido']) : 0);
-                    if ($rest <= 0.0001) echo '<span class="badge bg-success">Sí</span>'; else echo '<span class="text-muted">No</span>';
+                    if ($rest <= 0.0001) echo '<span class="badge bg-success">Sí</span>'; else echo '<span class="badge bg-danger">No</span>';
                 ?>
             </td>
             <td><a href="<?= BASE_URL ?>pedidos/ver?id=<?= $p['ID_Pedido'] ?>" class="btn btn-sm btn-outline-primary">Ver</a></td>

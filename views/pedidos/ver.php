@@ -20,7 +20,8 @@ $restante = max(0.0, $total - $pagosAplicados);
     <div>
         <button id="btnPrefactura" class="btn btn-outline-primary me-2">Imprimir Prefactura</button>
         <button id="btnFactura" class="btn btn-outline-success me-2">Imprimir Factura</button>
-        <button id="btnRegistrarPago" class="btn btn-outline-warning me-2">Registrar Pago</button>
+<!-- agrega una condicion si el restante es 0 deshabilita el boton registrar pago -->
+        <button id="btnRegistrarPago" class="btn btn-outline-warning me-2" <?= $restante <= 0 ? 'disabled' : '' ?>>Registrar Pago</button>
         <a href="<?= BASE_URL ?>pedidos" class="btn btn-secondary">Volver</a>
     </div>
 </div>
