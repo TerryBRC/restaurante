@@ -104,7 +104,7 @@ class PedidoController extends BaseController {
             $descripcion = "Pedido #{$idPedido} - {$nombreCliente} ({$tipoEntrega})";
             
             $userId = Session::get('user_id');
-            $movModel->registrarMovimiento('Ingreso', $totalPedido, $descripcion, $userId, null);
+            $movModel->registrarMovimiento('Pedido', $totalPedido, $descripcion, $userId, null);
         } catch (Exception $e) {
             error_log('PedidoController::crear - error al registrar movimiento: ' . $e->getMessage());
             // No fallar la creación del pedido si falla el registro del movimiento
