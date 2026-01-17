@@ -63,4 +63,23 @@ class ReporteModel {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Obtiene ventas desde una fecha/hora específica (para cierre de caja por sesión)
+     * @param string $fechaHora Fecha y hora en formato 'Y-m-d H:i:s'
+     * @return array
+     */
+    public function getVentasDesde($fechaHora) {
+        $conn = (new Database())->connect();
+        $stmt = $conn->prepare("
+            SELECT v.ID_Venta, v.Fecha_Hora, e.Nombre_Completo AS usuario, v.Metodo_Pago, v.Total, IFNULL(v.Servicio,0) AS Servicio, (v.Total + IFNULL(v.Servicio,0)) AS TotalFinal
+            FROM ventas v
+            INNER JOIN empleados e ON v.ID_Empleado = e.ID_Empleado
+            WHERE v.Fecha_Hora >= ?
+                AND v.Estado = 'Pagada'
+            ORDER BY v.Fecha_Hora ASC
+        ");
+        $stmt->execute([$fechaHora]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

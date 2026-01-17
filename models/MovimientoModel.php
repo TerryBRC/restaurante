@@ -117,7 +117,7 @@ class MovimientoModel {
     // Suma de ingresos no ventas: tipo Ingreso y ID_Venta IS NULL
     public function obtenerIngresosNoVentas($fecha = null) {
         try {
-            $sql = "SELECT SUM(Monto) as total FROM movimientos WHERE Tipo = 'Ingreso' AND (ID_Venta IS NULL OR ID_Venta = 0)";
+            $sql = "SELECT SUM(Monto) as total FROM movimientos WHERE Tipo = 'Pedido' AND (ID_Venta IS NULL OR ID_Venta = 0)";
             $params = [];
             if ($fecha) {
                 $sql .= ' AND DATE(Fecha_Hora) = ?';
@@ -204,6 +204,43 @@ class MovimientoModel {
         } catch (PDOException $e) {
             error_log('Error en obtenerSaldoFiltrado: ' . $e->getMessage());
             return 0.0;
+        }
+    }
+
+    /**
+     * Obtiene todos los movimientos desde la última apertura de caja
+     * Útil para reportes de cierre de caja basados en sesión
+     * @return array ['apertura_fecha' => string, 'apertura_monto' => float, 'movimientos' => array]
+     */
+    public function obtenerMovimientosDesdeUltimaApertura() {
+        try {
+            // Obtener la última apertura
+            $stmt = $this->conn->query("SELECT ID_Movimiento, Fecha_Hora, Monto FROM movimientos WHERE Tipo='Apertura' ORDER BY ID_Movimiento DESC LIMIT 1");
+            $apertura = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$apertura) {
+                return ['apertura_fecha' => null, 'apertura_monto' => 0.0, 'movimientos' => []];
+            }
+            
+            $idApertura = (int)$apertura['ID_Movimiento'];
+            
+            // Obtener todos los movimientos desde esa apertura (incluyendo la apertura misma)
+            $stmt2 = $this->conn->prepare('SELECT m.*, u.Nombre_Usuario, v.ID_Venta FROM movimientos m
+                    LEFT JOIN usuarios u ON m.ID_Usuario = u.ID_usuario
+                    LEFT JOIN ventas v ON m.ID_Venta = v.ID_Venta 
+                    WHERE m.ID_Movimiento >= ?
+                    ORDER BY m.Fecha_Hora DESC');
+            $stmt2->execute([$idApertura]);
+            $movimientos = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+            
+            return [
+                'apertura_fecha' => $apertura['Fecha_Hora'],
+                'apertura_monto' => floatval($apertura['Monto']),
+                'movimientos' => $movimientos
+            ];
+        } catch (PDOException $e) {
+            error_log('Error en obtenerMovimientosDesdeUltimaApertura: ' . $e->getMessage());
+            return ['apertura_fecha' => null, 'apertura_monto' => 0.0, 'movimientos' => []];
         }
     }
 }

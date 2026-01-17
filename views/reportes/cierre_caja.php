@@ -1,6 +1,18 @@
 <?php require_once dirname(__DIR__, 2) . '/config/base_url.php'; ?>
 <div class="container py-4">
-    <h2 class="mb-4">Cierre de Caja - Ventas Diarias</h2>
+    <h2 class="mb-4">Cierre de Caja - <?= isset($cajaAbierta) && $cajaAbierta ? 'Sesión Actual' : 'Última Sesión' ?></h2>
+    
+    <?php if (isset($fechaApertura) && $fechaApertura): ?>
+        <div class="alert alert-info mb-4">
+            <strong>Sesión desde:</strong> <?= date('d/m/Y H:i:s', strtotime($fechaApertura)) ?>
+            <?php if (isset($cajaAbierta) && $cajaAbierta): ?>
+                <span class="badge bg-success ms-2">Caja Abierta</span>
+            <?php else: ?>
+                <span class="badge bg-secondary ms-2">Caja Cerrada</span>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+    
     <?php if (isset($_GET['msg'])): ?>
         <?php if ($_GET['msg'] === 'ok'): ?>
             <div class="alert alert-success">Ticket de cierre enviado a la impresora correctamente.</div>
@@ -8,17 +20,6 @@
             <div class="alert alert-danger">Error al imprimir el ticket de cierre. Verifique la impresora.</div>
         <?php endif; ?>
     <?php endif; ?>
-    <form class="row g-3 mb-4" method="get" action="<?= BASE_URL ?>reportes/cierre_caja">
-        <div class="col-auto">
-            <label for="fecha" class="col-form-label">Fecha:</label>
-        </div>
-        <div class="col-auto">
-            <input type="date" id="fecha" name="fecha" class="form-control" value="<?= htmlspecialchars($fecha) ?>">
-        </div>
-        <div class="col-auto">
-            <button type="submit" class="btn btn-primary">Filtrar</button>
-        </div>
-    </form>
     <?php
     // Inicializar acumuladores para métodos de pago y movimientos
     $totalesPago = [
@@ -123,7 +124,7 @@
                 <div class="card-body">
                     <table class="table table-sm">
                         <tr><th>Apertura de Caja</th><td class="text-end">C$ <?= number_format($apertura, 2) ?></td></tr>
-                        <tr><th>Ingresos (no ventas)</th><td class="text-end">C$ <?= number_format($ingresos, 2) ?></td></tr>
+                        <tr><th>Pedidos</th><td class="text-end">C$ <?= number_format($ingresos, 2) ?></td></tr>
                         <tr><th>Egresos</th><td class="text-end">C$ <?= number_format($egresos, 2) ?></td></tr>
                         <tr class="table-info"><th>Efectivo por Ventas</th><td class="text-end">C$ <?= number_format($totalesPago['Efectivo'], 2) ?></td></tr>
                         <tr class="table-info"><th>Cambio entregado</th><td class="text-end">C$ <?= number_format($totalesCambio, 2) ?></td></tr>

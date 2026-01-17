@@ -45,21 +45,46 @@ class ReporteController extends BaseController {
     }
 
     public function cierre_caja() {
-        $fecha = $_GET['fecha'] ?? date('Y-m-d');
-        $model = new ReporteModel();
-        $ventas = $model->getCierreCajaDiario($fecha);
-
-        // Obtener movimientos del día
+        // Obtener datos desde la última apertura de caja en lugar de por fecha
         require_once __DIR__ . '/../models/MovimientoModel.php';
         $movModel = new MovimientoModel();
-        $movimientos = $movModel->obtenerMovimientos(null, $fecha, $fecha);
+        
+        // Verificar si hay caja abierta
+        $cajaAbierta = $movModel->cajaAbierta();
+        
+        // Obtener movimientos desde la última apertura
+        $datosApertura = $movModel->obtenerMovimientosDesdeUltimaApertura();
+        $movimientos = $datosApertura['movimientos'];
+        $fechaApertura = $datosApertura['apertura_fecha'];
+        
+        // Si no hay apertura, usar fecha actual para compatibilidad
+        if (!$fechaApertura) {
+            $fecha = date('Y-m-d');
+            $movimientos = $movModel->obtenerMovimientos(null, $fecha, $fecha);
+        } else {
+            // Extraer solo la fecha de la apertura para mostrar
+            $fecha = date('Y-m-d', strtotime($fechaApertura));
+        }
+        
+        // Obtener ventas desde la fecha de apertura
+        $model = new ReporteModel();
+        if ($fechaApertura) {
+            // Obtener ventas desde la hora de apertura
+            $ventas = $model->getVentasDesde($fechaApertura);
+        } else {
+            $ventas = $model->getCierreCajaDiario($fecha);
+        }
 
-        // Obtener pedidos del día
+        // Obtener pedidos desde la fecha de apertura
         require_once __DIR__ . '/../models/PedidoModel.php';
         $pedidoModel = new PedidoModel();
-        $pedidos = $pedidoModel->getPedidosByFecha($fecha);
+        if ($fechaApertura) {
+            $pedidos = $pedidoModel->getPedidosDesde($fechaApertura);
+        } else {
+            $pedidos = $pedidoModel->getPedidosByFecha($fecha);
+        }
 
-        $this->render('views/reportes/cierre_caja.php', compact('ventas', 'fecha', 'movimientos', 'pedidos'));
+        $this->render('views/reportes/cierre_caja.php', compact('ventas', 'fecha', 'movimientos', 'pedidos', 'cajaAbierta', 'fechaApertura'));
     }
 
     public function cierre_caja_export() {

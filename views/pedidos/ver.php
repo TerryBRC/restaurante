@@ -112,8 +112,11 @@ $restante = max(0.0, $total - $pagosAplicados);
                     <input type="hidden" name="ID_Pedido" value="<?= htmlspecialchars($id) ?>">
                                 <div class="mb-3">
                                     <label class="form-label">Método</label>
-                                    <input class="form-control" name="Metodo" value="Efectivo" maxlength="50" placeholder="Efectivo, Tarjeta, Transferencia...">
-                                    <div class="form-text">Máx. 50 caracteres. Sólo letras, números, espacios, guiones y comas.</div>
+                                    <select name="Metodo" id="metodoPago" class="form-control">
+                                        <option value="Efectivo">Efectivo</option>
+                                        <option value="Tarjeta">Tarjeta</option>
+                                        <option value="Transferencia">Transferencia</option>
+                                    </select>
                                 </div>
                     <div class="mb-3">
                         <div><strong>Total:</strong> <?= number_format($total,2) ?></div>

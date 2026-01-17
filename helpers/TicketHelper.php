@@ -92,6 +92,7 @@ class TicketHelper {
         return $out;
     }
 
+
     /**
      * Genera una comanda/ticket escalonado específico para delivery.
      * @param array $venta Venta con detalle (debe incluir 'detalles')
@@ -99,6 +100,104 @@ class TicketHelper {
      * @param int $width ancho en caracteres (ej. 40)
      * @return string Contenido listo para imprimir
      */
+    public static function generarComandaPedido($pedido, $tipo = 'ambos', $width = 40) {
+        // Intentar cargar categorías desde la base de datos para identificar las que van a barra (is_food = 0)
+        $categoriasBarra = ['Bebidas', 'Licores', 'Cockteles', 'Cervezas'];
+        try {
+            if (!class_exists('ProductModel')) require_once dirname(__DIR__, 1) . '/models/ProductModel.php';
+            $pm = new ProductModel();
+            $cats = $pm->getAllCategories();
+            if (is_array($cats) && count($cats) > 0) {
+                $categoriasBarra = [];
+                foreach ($cats as $c) {
+                    if (isset($c['is_food']) && intval($c['is_food']) === 0) {
+                        $categoriasBarra[] = $c['Nombre_Categoria'];
+                    }
+                }
+                if (empty($categoriasBarra)) $categoriasBarra = ['Bebidas', 'Licores', 'Cockteles', 'Cervezas'];
+            }
+        } catch (Exception $e) {
+            $categoriasBarra = ['Bebidas', 'Licores', 'Cockteles', 'Cervezas'];
+        }
+        
+        $detalles = $pedido['detalles'] ?? [];
+        $barra = [];
+        $cocina = [];
+        
+        foreach ($detalles as $d) {
+            // Priorizar campo is_food (1=true comida -> cocina, 0=false bebida -> barra)
+            if (isset($d['is_food'])) {
+                $isFood = $d['is_food'];
+                // Normalizar valores comunes (string '1','0', boolean, int)
+                $flag = false;
+                if (is_bool($isFood)) $flag = $isFood;
+                else if (is_numeric($isFood)) $flag = intval($isFood) === 1;
+                else $flag = in_array(strtolower((string)$isFood), ['1','true','yes','si'], true);
+                if ($flag) $cocina[] = $d; else $barra[] = $d;
+                continue;
+            }
+
+            // Fallback a categoría cuando no exista is_food
+            $cat = isset($d['Nombre_Categoria']) ? trim($d['Nombre_Categoria']) : (isset($d['categoria']) ? trim($d['categoria']) : '');
+            if ($cat !== '' && in_array($cat, $categoriasBarra)) $barra[] = $d; else $cocina[] = $d;
+        }
+
+        if ($tipo === 'barra' && empty($barra)) return '';
+        if ($tipo === 'cocina' && empty($cocina)) return '';
+
+        if (session_status() == PHP_SESSION_NONE) session_start();
+        $usuario = isset($_SESSION['username']) ? $_SESSION['username'] : (isset($_SESSION['user']['Nombre_Completo']) ? $_SESSION['user']['Nombre_Completo'] : 'Desconocido');
+        $cliente = $pedido['Nombre_Cliente'] ?? ($pedido['nombre_cliente'] ?? 'Cliente');
+        $idPedido = $pedido['ID_Pedido'] ?? ($pedido['id'] ?? '0');
+        $fecha = $pedido['Fecha_Hora'] ?? date('Y-m-d H:i:s');
+        $tipoEntrega = $pedido['tipo_entrega'] ?? 'local';
+        $notas = $pedido['notas'] ?? '';
+
+        $out = "\n";
+        $buildSection = function($items, $sectionName) use ($width, $usuario, $cliente, $idPedido, $fecha, $tipoEntrega, $notas) {
+            $s = "";
+            $s .= self::mb_str_pad("====== COMANDA $sectionName ======", $width, ' ', STR_PAD_BOTH) . "\n";
+            $s .= "Usuario: " . $usuario . "\n";
+            $s .= "Pedido ID: " . $idPedido . "\n";
+            $s .= "Cliente: " . $cliente . "\n";
+            $s .= "Tipo: " . strtoupper($tipoEntrega) . "\n";
+            $s .= "Hora: " . $fecha . "\n";
+            if (!empty($notas)) {
+                $s .= "Notas: " . wordwrap($notas, $width - 7, "\n       ", true) . "\n";
+            }
+            $s .= str_repeat('-', $width) . "\n";
+            foreach ($items as $item) {
+                $qty = isset($item['Cantidad']) ? $item['Cantidad'] : (isset($item['cantidad']) ? $item['cantidad'] : 1);
+                $name = isset($item['Nombre_Producto']) ? $item['Nombre_Producto'] : (isset($item['nombre']) ? $item['nombre'] : 'Producto');
+                $prep = isset($item['Preparacion']) ? $item['Preparacion'] : (isset($item['preparacion']) ? $item['preparacion'] : '');
+                // Truncar el nombre de forma multibyte para evitar roturas con wordwrap
+                $nameClean = mb_strimwidth(mb_strtoupper($name), 0, max(0, $width - 6), '');
+                $line = $qty . ' x ' . $nameClean;
+                $wrapped = wordwrap($line, $width, "\n", true);
+                $s .= $wrapped . "\n";
+                if (!empty($prep)) {
+                    $prepWrapped = wordwrap($prep, $width - 4, "\n", true);
+                    $lines = explode("\n", $prepWrapped);
+                    foreach ($lines as $l) {
+                        $s .= '   > ' . $l . "\n";
+                    }
+                }
+            }
+            $s .= str_repeat('-', $width) . "\n\n";
+            return $s;
+        };
+
+        if ($tipo === 'barra') {
+            $out .= $buildSection($barra, 'BARRA');
+        } elseif ($tipo === 'cocina') {
+            $out .= $buildSection($cocina, 'COCINA');
+        } else {
+            if (!empty($barra)) $out .= $buildSection($barra, 'BARRA');
+            if (!empty($cocina)) $out .= $buildSection($cocina, 'COCINA');
+        }
+
+        return $out;
+    }
 
     /**
      * Genera una comanda/aviso específica para traslado de mesa.

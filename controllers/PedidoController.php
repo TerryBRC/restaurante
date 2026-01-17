@@ -85,6 +85,31 @@ class PedidoController extends BaseController {
             exit;
         }
 
+        // Registrar el pedido como movimiento de ingreso en la caja
+        try {
+            require_once __DIR__ . '/../models/MovimientoModel.php';
+            $movModel = new MovimientoModel();
+            
+            // Calcular el total del pedido
+            $totalPedido = 0.0;
+            foreach ($detalles as $detalle) {
+                $cantidad = isset($detalle['cantidad']) ? (int)$detalle['cantidad'] : 1;
+                $precio = isset($detalle['precio']) ? (float)$detalle['precio'] : 0.0;
+                $totalPedido += $cantidad * $precio;
+            }
+            
+            // Registrar como ingreso
+            $nombreCliente = $pedido['nombre_cliente'] ?? 'Cliente';
+            $tipoEntrega = $pedido['tipo_entrega'] ?? 'local';
+            $descripcion = "Pedido #{$idPedido} - {$nombreCliente} ({$tipoEntrega})";
+            
+            $userId = Session::get('user_id');
+            $movModel->registrarMovimiento('Ingreso', $totalPedido, $descripcion, $userId, null);
+        } catch (Exception $e) {
+            error_log('PedidoController::crear - error al registrar movimiento: ' . $e->getMessage());
+            // No fallar la creación del pedido si falla el registro del movimiento
+        }
+
         // Generar impresión similar a comanda: obtener datos del pedido para generar comanda
         $printResults = [];
         try {

@@ -122,4 +122,29 @@ class PedidoModel {
             return false;
         }
     }
+
+    /**
+     * Obtiene pedidos desde una fecha/hora específica (para cierre de caja por sesión)
+     * @param string $fechaHora Fecha y hora en formato 'Y-m-d H:i:s'
+     * @return array
+     */
+    public function getPedidosDesde($fechaHora) {
+        try {
+            $sql = "SELECT pv.*, COALESCE(pagos.sum_pagado, 0) as pagado, (COALESCE(pv.total_pedido,0) - COALESCE(pagos.sum_pagado,0)) as restante
+                    FROM pedidos_view pv
+                    LEFT JOIN (
+                        SELECT ID_Pedido, SUM(CASE WHEN Es_Cambio=0 THEN Monto ELSE 0 END) as sum_pagado
+                        FROM pagos_pedido
+                        GROUP BY ID_Pedido
+                    ) pagos ON pagos.ID_Pedido = pv.ID_Pedido
+                    WHERE pv.fecha_creado >= ?
+                    ORDER BY pv.fecha_creado DESC";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([$fechaHora]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log('PedidoModel::getPedidosDesde error: ' . $e->getMessage());
+            return [];
+        }
+    }
 }

@@ -34,10 +34,22 @@ define('ITEMS_POR_PAGINA', 10);
 // Configuración de zona horaria
 date_default_timezone_set('America/Managua');
 
-// Configuración de errores
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+/* // Detectar entorno
+$isProduction = ($_SERVER['SERVER_NAME'] !== 'localhost' && $_SERVER['SERVER_NAME'] !== '127.0.0.1');
+// Configuración de errores según entorno
+if ($isProduction) {
+    // Producción: no mostrar errores
+    ini_set('display_errors', 0);
+    ini_set('display_startup_errors', 0);
+    ini_set('log_errors', 1);
+    ini_set('error_log', __DIR__ . '/../logs/php_errors.log');
+    error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
+} else {
+    // Desarrollo: mostrar errores
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    error_reporting(E_ALL);
+} */
 
 // Funciones de utilidad
 
