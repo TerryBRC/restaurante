@@ -28,6 +28,7 @@ $router->add('configuracion/update', 'ConfigController', 'update');
 $router->add('configuracion/buscarImpresoras', 'ConfigController', 'buscarImpresoras');
 $router->add('configuracion/backup', 'ConfigController', 'backup');
 $router->add('configuracion/probarImpresora', 'ConfigController', 'probarImpresora');
+$router->add('configuracion/verLogs', 'ConfigController', 'verLogsImpresora');
 
 $router->add('productos/procesar', 'ProductoController', 'procesar');
 // Ruta para AJAX de agregar productos a la comanda
@@ -49,6 +50,8 @@ $router->add('mesas/trasladar', 'MesaController', 'trasladar');
 
 $router->add('caja/apertura', 'CajaController', 'apertura');
 $router->add('caja/cierre', 'CajaController', 'cierre');
+$router->add('caja/imprimir_pre_cierre', 'CajaController', 'imprimirPreCierre');
+$router->add('caja/imprimir_cierre', 'CajaController', 'imprimirCierre');
 
 $router->add('movimientos', 'MovimientoController', 'index');
 $router->add('movimientos/registrar', 'MovimientoController', 'registrar');

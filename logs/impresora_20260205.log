@@ -1,0 +1,24 @@
+[2026-02-05 19:19:47] [INFO] [::1] Iniciando impresión [impresora_barra]: 'POSPrinter POS-80(Copy 1)' - 161 bytes
+[2026-02-05 19:19:47] [INFO] [::1] Conectando a impresora: POSPrinter POS-80(Copy 1)
+[2026-02-05 19:19:47] [INFO] [::1] Enviando contenido a impresora
+[2026-02-05 19:19:47] [SUCCESS] [::1] Impresión completada exitosamente [impresora_barra]
+[2026-02-05 19:19:53] [INFO] [::1] Iniciando impresión [impresora_cocina]: 'POSPrinter POS-80(Copy 1)' - 152 bytes
+[2026-02-05 19:19:53] [INFO] [::1] Conectando a impresora: POSPrinter POS-80(Copy 1)
+[2026-02-05 19:19:53] [INFO] [::1] Enviando contenido a impresora
+[2026-02-05 19:19:53] [SUCCESS] [::1] Impresión completada exitosamente [impresora_cocina]
+[2026-02-05 19:20:05] [INFO] [::1] Iniciando impresión [impresora_barra]: 'POSPrinter POS-80(Copy 1)' - 161 bytes
+[2026-02-05 19:20:05] [INFO] [::1] Conectando a impresora: POSPrinter POS-80(Copy 1)
+[2026-02-05 19:20:05] [INFO] [::1] Enviando contenido a impresora
+[2026-02-05 19:20:05] [SUCCESS] [::1] Impresión completada exitosamente [impresora_barra]
+[2026-02-05 19:20:05] [INFO] [::1] Iniciando impresión [impresora_cocina]: 'POSPrinter POS-80(Copy 1)' - 152 bytes
+[2026-02-05 19:20:05] [INFO] [::1] Conectando a impresora: POSPrinter POS-80(Copy 1)
+[2026-02-05 19:20:05] [INFO] [::1] Enviando contenido a impresora
+[2026-02-05 19:20:05] [SUCCESS] [::1] Impresión completada exitosamente [impresora_cocina]
+[2026-02-05 19:24:51] [INFO] [::1] Iniciando impresión [impresora_barra]: 'POSPrinter POS-80(Copy 1)' - 154 bytes
+[2026-02-05 19:24:51] [INFO] [::1] Conectando a impresora: POSPrinter POS-80(Copy 1)
+[2026-02-05 19:24:51] [INFO] [::1] Enviando contenido a impresora
+[2026-02-05 19:24:51] [SUCCESS] [::1] Impresión completada exitosamente [impresora_barra]
+[2026-02-05 22:49:09] [INFO] [::1] Iniciando impresión [directo]: 'POSPrinter POS-80(Copy 1)' - 1044 bytes
+[2026-02-05 22:49:09] [INFO] [::1] Conectando a impresora: POSPrinter POS-80(Copy 1)
+[2026-02-05 22:49:09] [INFO] [::1] Enviando contenido a impresora
+[2026-02-05 22:49:09] [SUCCESS] [::1] Impresión completada exitosamente [directo]

@@ -37,6 +37,9 @@ class ConfigController extends BaseController {
             }
             $configModel = new ConfigModel();
             $configModel->set('nombre_app', $_POST['nombre_app'] ?? '');
+            $configModel->set('ruc', $_POST['ruc'] ?? '');
+            $configModel->set('telefono', $_POST['telefono'] ?? '');
+            $configModel->set('direccion', $_POST['direccion'] ?? '');
             $configModel->set('usar_impresora_cocina', isset($_POST['usar_impresora_cocina']) ? '1' : '0');
             $configModel->set('impresora_cocina', $_POST['impresora_cocina'] ?? '');
             $configModel->set('usar_impresora_barra', isset($_POST['usar_impresora_barra']) ? '1' : '0');
@@ -99,7 +102,8 @@ class ConfigController extends BaseController {
         unlink($filename);
         exit;
     }
-        // Endpoint para probar impresora
+        
+    // Endpoint para probar impresora
     public function probarImpresora() {
         Session::init();
         $userRole = Session::getUserRole();
@@ -120,11 +124,39 @@ class ConfigController extends BaseController {
         }
         require_once dirname(__DIR__, 1) . '/helpers/ImpresoraHelper.php';
         $mensaje = "PRUEBA DE IMPRESORA ($tipo)\n" . date('d/m/Y H:i:s') . "\n----------------------\n";
-        $ok = ImpresoraHelper::imprimir_directo($nombre, $mensaje);
-        if ($ok) {
+        $resultado = ImpresoraHelper::imprimir_directo($nombre, $mensaje, 'test');
+        if ($resultado['success']) {
             echo json_encode(['success' => true]);
         } else {
-            echo json_encode(['success' => false, 'error' => 'No se pudo imprimir en la impresora seleccionada.']);
+            $error = $resultado['error'] ?: 'No se pudo imprimir en la impresora seleccionada.';
+            // Incluir ruta del log para debugging
+            $logFile = ImpresoraHelper::getLogFile();
+            echo json_encode([
+                'success' => false, 
+                'error' => $error,
+                'logFile' => $logFile
+            ]);
+        }
+        exit;
+    }
+    
+    // Nuevo endpoint para ver logs de impresión
+    public function verLogsImpresora() {
+        Session::init();
+        $userRole = Session::getUserRole();
+        if ($userRole !== 'Administrador') {
+            http_response_code(403);
+            echo 'Acceso Denegado.';
+            exit;
+        }
+        
+        $logFile = ImpresoraHelper::getLogFile();
+        if (file_exists($logFile)) {
+            header('Content-Type: text/plain');
+            header('Content-Disposition: attachment; filename="impresora.log"');
+            readfile($logFile);
+        } else {
+            echo "No hay logs de impresión disponibles.";
         }
         exit;
     }

@@ -97,8 +97,9 @@ class WindowsPrintConnector implements PrintConnector
 
     /**
      * Valid printer name.
+     * Modificado para aceptar más caracteres incluyendo paréntesis
      */
-    const REGEX_PRINTERNAME = "/^[\d\w-]+(\s[\d\w-]+)*$/";
+    const REGEX_PRINTERNAME = "/^[\d\w\s\-_()\\.\\/]+$/";
 
     /**
      * Valid smb:// URI containing hostname & printer with optional user & optional password only.

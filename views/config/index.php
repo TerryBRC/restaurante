@@ -9,8 +9,22 @@
     <form method="POST" action="<?php echo BASE_URL; ?>configuracion/update">
         <input type="hidden" name="csrf_token" value="<?= Csrf::getToken() ?>">
         <div class="mb-3">
-            <label for="nombre_app" class="form-label">Nombre de la aplicación</label>
+            <label for="nombre_app" class="form-label">Nombre del Restaurante</label>
             <input type="text" class="form-control" id="nombre_app" name="nombre_app" value="<?php echo htmlspecialchars($config['nombre_app'] ?? ''); ?>" required>
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="ruc" class="form-label">RUC</label>
+                <input type="text" class="form-control" id="ruc" name="ruc" value="<?php echo htmlspecialchars($config['ruc'] ?? ''); ?>" placeholder="Ej: 0810509961001U">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="telefono" class="form-label">Teléfono</label>
+                <input type="text" class="form-control" id="telefono" name="telefono" value="<?php echo htmlspecialchars($config['telefono'] ?? ''); ?>" placeholder="Ej: 8882-3804">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="direccion" class="form-label">Dirección</label>
+                <input type="text" class="form-control" id="direccion" name="direccion" value="<?php echo htmlspecialchars($config['direccion'] ?? ''); ?>" placeholder="Dirección del restaurante">
+            </div>
         </div>
         <div class="mb-3">
             <label class="form-label">Impresora de Cocina</label>

@@ -2,6 +2,33 @@
 // Helper para generar el contenido de tickets y comandas
 class TicketHelper {
     /**
+     * Obtener configuración dinámica desde la base de datos
+     */
+    private static function getConfig() {
+        static $config = null;
+        if ($config === null) {
+            $config = [
+                'ruc' => '',
+                'telefono' => '',
+                'direccion' => ''
+            ];
+            try {
+                if (!class_exists('ConfigModel')) {
+                    require_once dirname(__DIR__, 1) . '/models/ConfigModel.php';
+                }
+                $model = new ConfigModel();
+                $dbConfig = $model->getAll();
+                if (isset($dbConfig['ruc'])) $config['ruc'] = $dbConfig['ruc'];
+                if (isset($dbConfig['telefono'])) $config['telefono'] = $dbConfig['telefono'];
+                if (isset($dbConfig['direccion'])) $config['direccion'] = $dbConfig['direccion'];
+            } catch (Exception $e) {
+                // Mantener valores por defecto
+            }
+        }
+        return $config;
+    }
+
+    /**
      * Multibyte-safe str_pad replacement.
      * Pads $input to $length characters using $pad_string and $type (STR_PAD_RIGHT|STR_PAD_LEFT|STR_PAD_BOTH)
      */
@@ -24,15 +51,26 @@ class TicketHelper {
         }
     }
     public static function generarTicketVenta($restaurante, $mesa, $fechaHora, $detalles, $total, $empleado, $ticketId, $moneda, $metodoPago, $cambio, $servicio, $prefactura = false) {
+        // Obtener configuración dinámica
+        $config = self::getConfig();
+        
         // Ancho máximo de línea para ticket térmico estándar 80mm
         $maxWidth = 35;
         $out  = str_pad($restaurante, $maxWidth, ' ', STR_PAD_BOTH) . "\n";
         if ($prefactura) {
             $out .= str_pad('*** PRE-FACTURA ***', $maxWidth, ' ', STR_PAD_BOTH) . "\n";
         }
-        $out .= "RUC: 0810509961001U\n";
-        $out .= "Tel: 8882-3804\n";
-        $out .= "Dirección: Frente al nuevo \nhospital HEODRA-León\n";
+        if (!empty($config['ruc'])) {
+            $out .= "RUC: " . $config['ruc'] . "\n";
+        }
+        if (!empty($config['telefono'])) {
+            $out .= "Tel: " . $config['telefono'] . "\n";
+        }
+        if (!empty($config['direccion'])) {
+            // Dividir dirección larga en múltiples líneas si es necesario
+            $direccionLines = wordwrap($config['direccion'], $maxWidth, "\n", true);
+            $out .= "Dirección: " . $direccionLines . "\n";
+        }
         $out .= str_repeat('=', $maxWidth) . "\n";
         $out .= "Mesa: $mesa\n";
         $out .= "Fecha: $fechaHora\n";
@@ -302,12 +340,22 @@ class TicketHelper {
     }
     // Generar ticket de cierre de caja - ventas diarias
     public static function generarTicketCierreCaja($restaurante, $fechaInicio, $fechaFin, $totalEfectivo, $totalTarjeta, $totalVentas, $totalServicio, $totalGeneral, $empleado, $ticketId, $moneda) {
+        // Obtener configuración dinámica
+        $config = self::getConfig();
+        
         $maxWidth = 35;
         $out  = str_pad($restaurante, $maxWidth, ' ', STR_PAD_BOTH) . "\n";
         $out .= str_pad('*** CIERRE DE CAJA ***', $maxWidth, ' ', STR_PAD_BOTH) . "\n";
-        $out .= "RUC: 0810509961001U\n";
-        $out .= "Tel: 8882-3804\n";
-        $out .= "Dirección: Frente al nuevo \nhospital HEODRA-León\n";
+        if (!empty($config['ruc'])) {
+            $out .= "RUC: " . $config['ruc'] . "\n";
+        }
+        if (!empty($config['telefono'])) {
+            $out .= "Tel: " . $config['telefono'] . "\n";
+        }
+        if (!empty($config['direccion'])) {
+            $direccionLines = wordwrap($config['direccion'], $maxWidth, "\n", true);
+            $out .= "Dirección: " . $direccionLines . "\n";
+        }
         $out .= str_repeat('=', $maxWidth) . "\n";
         $out .= "Desde: $fechaInicio\n";
         $out .= "Hasta: $fechaFin\n";
@@ -393,6 +441,71 @@ class TicketHelper {
         $out .= "Fecha/Hora: " . date('d/m/Y H:i') . "\n";
         $out .= "\n";
         $out .= str_pad('FIN DEL REPORTE', $maxWidth, ' ', STR_PAD_BOTH) . "\n";
+        return $out;
+    }
+
+    /**
+     * Genera ticket de PRE-CIERRE (resumen acumulado sin cerrar caja)
+     * Muestra lo que lleva acumulado el día sin registrar el cierre
+     * @param array $datos Datos del reporte de cierre (de ReporteModel::obtenerReporteCierreCaja)
+     * @return string Texto listo para impresión térmica
+     */
+    public static function generarTicketPreCierreCaja($datos) {
+        $config = self::getConfig();
+        $maxWidth = 35;
+        $out  = str_pad($config['ruc'] ? $config['ruc'] : 'RESTAURANTE', $maxWidth, ' ', STR_PAD_BOTH) . "\n";
+        $out .= str_pad('*** PRE-CIERRE DE CAJA ***', $maxWidth, ' ', STR_PAD_BOTH) . "\n";
+        if (!empty($config['telefono'])) {
+            $out .= "Tel: " . $config['telefono'] . "\n";
+        }
+        $out .= str_repeat('=', $maxWidth) . "\n";
+        $out .= "Fecha: " . date('d/m/Y H:i:s') . "\n";
+        $out .= str_repeat('-', $maxWidth) . "\n";
+        $out .= str_pad('MONTO APERTURA:', 26) . str_pad('C$ ' . number_format($datos['monto_apertura'] ?? 0, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        $out .= str_repeat('-', $maxWidth) . "\n";
+        $out .= "RESUMEN DE VENTAS:\n";
+        $out .= str_pad('Total Efectivo:', 26) . str_pad('C$ ' . number_format($datos['total_efectivo'] ?? 0, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        $out .= str_pad('Total Tarjeta:', 26) . str_pad('C$ ' . number_format($datos['total_tarjeta'] ?? 0, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        $out .= str_pad('Total Ventas:', 26) . str_pad('C$ ' . number_format($datos['total_ventas'] ?? 0, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        $out .= str_repeat('-', $maxWidth) . "\n";
+        $out .= str_pad('INGRESOS:', 26) . str_pad('C$ ' . number_format($datos['total_ingresos'] ?? 0, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        $out .= str_pad('EGRESOS:', 26) . str_pad('C$ ' . number_format($datos['total_egresos'] ?? 0, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        $out .= str_repeat('=', $maxWidth) . "\n";
+        $saldo = ($datos['monto_apertura'] ?? 0) + ($datos['total_ventas'] ?? 0) + ($datos['total_ingresos'] ?? 0) - ($datos['total_egresos'] ?? 0);
+        $out .= str_pad('SALDO ACTUAL:', 26) . str_pad('C$ ' . number_format($saldo, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        $out .= str_repeat('=', $maxWidth) . "\n";
+        $out .= "Este es un PRE-CIERRE.\n";
+        $out .= "La caja aún está abierta.\n";
+        $out .= "Use el botón CERRAR CAJA\n";
+        $out .= "para registrar el cierre oficial.\n";
+        $out .= str_repeat('-', $maxWidth) . "\n";
+        $out .= "Pre-cierre generado por:\n";
+        $out .= ($_SESSION['username'] ?? ($_SESSION['user']['Nombre_Completo'] ?? 'Usuario')) . "\n";
+        $out .= date('d/m/Y H:i:s') . "\n";
+        return $out;
+    }
+
+    /**
+     * Genera ticket de CIERRE de caja (versión simplificada para impresión directa)
+     * @param array $datos ['monto_cierre' => float, 'fecha_cierre' => string, 'usuario' => string]
+     * @return string Texto listo para impresión térmica
+     */
+    public static function generarTicketCierreCajaSimplificado($datos) {
+        $config = self::getConfig();
+        $maxWidth = 35;
+        $out  = str_pad($config['ruc'] ? $config['ruc'] : 'RESTAURANTE', $maxWidth, ' ', STR_PAD_BOTH) . "\n";
+        $out .= str_pad('*** CIERRE DE CAJA ***', $maxWidth, ' ', STR_PAD_BOTH) . "\n";
+        if (!empty($config['telefono'])) {
+            $out .= "Tel: " . $config['telefono'] . "\n";
+        }
+        $out .= str_repeat('=', $maxWidth) . "\n";
+        $out .= "Fecha Cierre: " . date('d/m/Y H:i:s', strtotime($datos['fecha_cierre'])) . "\n";
+        $out .= str_repeat('-', $maxWidth) . "\n";
+        $out .= str_pad('MONTO CIERRE:', 26) . str_pad('C$ ' . number_format($datos['monto_cierre'], 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        $out .= str_repeat('=', $maxWidth) . "\n";
+        $out .= "Cerrado por: " . $datos['usuario'] . "\n";
+        $out .= str_repeat('-', $maxWidth) . "\n";
+        $out .= "*** CIERRE REGISTRADO ***\n";
         return $out;
     }
 }

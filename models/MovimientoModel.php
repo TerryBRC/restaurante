@@ -243,4 +243,32 @@ class MovimientoModel {
             return ['apertura_fecha' => null, 'apertura_monto' => 0.0, 'movimientos' => []];
         }
     }
+
+    /**
+     * Obtiene el último cierre de caja del día
+     * @return array|null Datos del cierre o null si no hay ninguno hoy
+     */
+    public function obtenerUltimoCierreHoy() {
+        try {
+            $stmt = $this->conn->query("SELECT * FROM movimientos WHERE Tipo='Cierre' AND DATE(Fecha_Hora) = CURDATE() ORDER BY ID_Movimiento DESC LIMIT 1");
+            return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        } catch (PDOException $e) {
+            error_log('Error en obtenerUltimoCierreHoy: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Verifica si ya se hizo un cierre de caja hoy
+     * @return bool
+     */
+    public function cierreHoy() {
+        try {
+            $stmt = $this->conn->query("SELECT COUNT(*) as total FROM movimientos WHERE Tipo='Cierre' AND DATE(Fecha_Hora) = CURDATE()");
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $row && $row['total'] > 0;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
 }
