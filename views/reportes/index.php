@@ -28,15 +28,15 @@
                 </div>
             </a>
         </div>
-        <div class="col-md-6 col-lg-3">
-            <a href="<?= BASE_URL ?>reportes/cierre_ventas_egresos" class="card text-decoration-none h-100 shadow-sm border-0">
+        <!-- <div class="col-md-6 col-lg-3">
+            <a href="<= BASE_URL ?>reportes/cierre_ventas_egresos" class="card text-decoration-none h-100 shadow-sm border-0">
                 <div class="card-body text-center">
                     <i class="bi bi-file-earmark-text display-4 text-danger mb-3"></i>
                     <h5 class="card-title">Cierre Ventas & Egresos</h5>
                     <p class="card-text small">Reporte combinado: ventas y movimientos de egreso.</p>
                 </div>
             </a>
-        </div>
+        </div> -->
         <div class="col-md-6 col-lg-3">
             <a href="<?= BASE_URL ?>reportes/inventario" class="card text-decoration-none h-100 shadow-sm border-0">
                 <div class="card-body text-center">

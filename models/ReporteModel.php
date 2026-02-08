@@ -82,4 +82,26 @@ class ReporteModel {
         $stmt->execute([$fechaHora]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Obtiene ventas específicas por IDs (para cierre de caja por sesión)
+     * @param array $idsVentas Array de IDs de ventas
+     * @return array
+     */
+    public function getVentasByIds($idsVentas) {
+        if (empty($idsVentas)) {
+            return [];
+        }
+        $conn = (new Database())->connect();
+        $placeholders = implode(',', array_fill(0, count($idsVentas), '?'));
+        $stmt = $conn->prepare("
+            SELECT v.ID_Venta, v.Fecha_Hora, e.Nombre_Completo AS usuario, v.Metodo_Pago, v.Total, IFNULL(v.Servicio,0) AS Servicio, (v.Total + IFNULL(v.Servicio,0)) AS TotalFinal
+            FROM ventas v
+            INNER JOIN empleados e ON v.ID_Empleado = e.ID_Empleado
+            WHERE v.ID_Venta IN ($placeholders)
+            ORDER BY v.Fecha_Hora ASC
+        ");
+        $stmt->execute($idsVentas);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

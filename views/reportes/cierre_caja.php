@@ -20,7 +20,74 @@
             <div class="alert alert-danger">Error al imprimir el ticket de cierre. Verifique la impresora.</div>
         <?php endif; ?>
     <?php endif; ?>
+    
     <?php
+    // Obtener todos los cierres del día para mostrar lista con botones de reimprimir
+    require_once dirname(__DIR__, 2) . '/models/MovimientoModel.php';
+    $movModel = new MovimientoModel();
+    $todosMovimientos = $movModel->obtenerMovimientos(null, $fecha, $fecha);
+    
+    // Agrupar movimientos por sesiones de caja (Apertura -> ... -> Cierre)
+    // Usar una pila/stack para manejar sesiones anidadas correctamente
+    $sesiones = [];
+    $pilaSesiones = []; // Stack de sesiones abiertas
+    
+    if ($todosMovimientos && is_array($todosMovimientos)) {
+        // Ordenar por fecha ascendente para procesar cronológicamente
+        usort($todosMovimientos, function($a, $b) {
+            return strtotime($a['Fecha_Hora']) - strtotime($b['Fecha_Hora']);
+        });
+        
+        error_log("[CIERRE_VISTA] Movimientos ordenados: " . count($todosMovimientos));
+        foreach ($todosMovimientos as $m) {
+            error_log("[CIERRE_VISTA] " . $m['ID_Movimiento'] . " | " . $m['Fecha_Hora'] . " | " . $m['Tipo'] . " | " . $m['Monto']);
+        }
+        
+        foreach ($todosMovimientos as $mov) {
+            $tipo = $mov['Tipo'];
+            
+            if ($tipo === 'Apertura') {
+                //Nueva sesión - agregarla al stack
+                $nuevaSesion = [
+                    'apertura' => $mov,
+                    'ventas' => [],
+                    'cierre' => null,
+                    'egresos' => []
+                ];
+                $pilaSesiones[] = $nuevaSesion;
+                $sesiones[] = &$pilaSesiones[count($pilaSesiones)-1];
+                error_log("[CIERRE_VISTA] Nueva sesión - ID: " . $mov['ID_Movimiento'] . ", Monto: " . $mov['Monto']);
+                
+            } elseif ($tipo === 'Cierre') {
+                //Cierre - buscar la sesión abierta más reciente que corresponda
+                if (!empty($pilaSesiones)) {
+                    $idx = count($pilaSesiones) - 1;
+                    $pilaSesiones[$idx]['cierre'] = $mov;
+                    error_log("[CIERRE_VISTA] Cierre sesión - ID: " . $mov['ID_Movimiento'] . ", Cierre monto: " . $mov['Monto']);
+                    array_pop($pilaSesiones);
+                }
+                
+            } elseif ($tipo === 'Ingreso' && !empty($mov['ID_Venta'])) {
+                //Movimiento - agregar a la sesión abierta más reciente
+                if (!empty($pilaSesiones)) {
+                    $idx = count($pilaSesiones) - 1;
+                    $pilaSesiones[$idx]['ventas'][] = $mov;
+                    error_log("[CIERRE_VISTA] Venta agregada a sesión: ID_Venta=" . $mov['ID_Venta']);
+                }
+            } elseif ($tipo === 'Egreso') {
+                if (!empty($pilaSesiones)) {
+                    $idx = count($pilaSesiones) - 1;
+                    $pilaSesiones[$idx]['egresos'][] = $mov;
+                }
+            }
+        }
+        
+        error_log("[CIERRE_VISTA] Sesiones encontradas: " . count($sesiones));
+        foreach ($sesiones as $i => $s) {
+            error_log("[CIERRE_VISTA] Sesión $i: Apertura=" . $s['apertura']['Monto'] . ", Ventas=" . count($s['ventas']) . ", Cierre=" . ($s['cierre'] ? $s['cierre']['Monto'] : 'NULL'));
+        }
+    }
+    
     // Inicializar acumuladores para métodos de pago y movimientos
     $totalesPago = [
         'Efectivo' => 0,
@@ -35,7 +102,6 @@
             $granServicio += $venta['Servicio'];
             $granFinal += $venta['TotalFinal'];
             // Desglose de métodos de pago por venta usando la tabla `pagos` cuando esté disponible
-            // Esto evita depender de la cadena Metodo_Pago y permite un desglose más preciso.
             require_once dirname(__DIR__, 2) . '/models/PagoModel.php';
             $pagoModel = new PagoModel();
             $pagosVenta = $pagoModel->getPagosByVenta($venta['ID_Venta']);
@@ -47,11 +113,9 @@
                     $metodoRaw = trim($p['Metodo']);
                     $monto = (float)$p['Monto'];
                     if ((int)$p['Es_Cambio'] === 1) {
-                        // monto registrado como cambio (efectivo devuelto)
                         $sumaCambioRegistrado += $monto;
                         continue;
                     }
-                    // Clasificar por palabras clave
                     if (stripos($metodoRaw, 'efectivo') !== false) {
                         $totalesPago['Efectivo'] += $monto;
                     } elseif (stripos($metodoRaw, 'tarjeta') !== false || stripos($metodoRaw, 'card') !== false) {
@@ -65,7 +129,6 @@
                     $restante -= $monto;
                 }
             } else {
-                // Fallback: si no hay registros en pagos, intentar parsear Metodo_Pago legacy
                 $mp = $venta['Metodo_Pago'];
                 if ($mp) {
                     $partes = explode(',', $mp);
@@ -90,11 +153,9 @@
                     }
                 }
             }
-            // Si queda algún monto sin clasificar (por redondeos), contabilizarlo en 'Otro'
             if ($restante > 0.01) {
                 $totalesPago['Otro'] += $restante;
             }
-            // Registrar el impacto del cambio en efectivo: reducir el efectivo a entregar
             if (!isset($totalesCambio)) $totalesCambio = 0.0;
             $totalesCambio += $sumaCambioRegistrado;
         }
@@ -108,11 +169,7 @@
             elseif ($mov['Tipo'] === 'Egreso') $egresos += $mov['Monto'];
         }
     }
-    // Obtener ingresos no ventas (manuales)
-    require_once dirname(__DIR__, 2) . '/models/MovimientoModel.php';
-    $movModel = new MovimientoModel();
     $ingresos = $movModel->obtenerIngresosNoVentas($fecha);
-    // Restar el total de cambios entregados al efectivo a entregar
     $totalesCambio = $totalesCambio ?? 0.0;
     $efectivoEntregar = $apertura + $ingresos + $totalesPago['Efectivo'] - $egresos - $totalesCambio;
     ?>
@@ -148,6 +205,77 @@
             </div>
         </div>
     </div>
+
+    <?php if (!empty($sesiones)): ?>
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="bi bi-printer"></i> Historial de Cierres del Día</h5>
+        </div>
+        <div class="card-body">
+            <p class="text-muted small mb-3">Haz clic en el botón para reimprimir cualquier cierre de caja del día.</p>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Sesión</th>
+                            <th>Apertura</th>
+                            <th>Ventas</th>
+                            <th>Cierre</th>
+                            <th>Monto Cierre</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($sesiones as $index => $sesion): ?>
+                        <tr class="<?= !$sesion['cierre'] ? 'table-warning' : '' ?>">
+                            <td>
+                                <strong>Sesión <?= count($sesiones) - $index ?></strong><br>
+                                <small class="text-muted"><?= date('d/m/Y H:i:s', strtotime($sesion['apertura']['Fecha_Hora'])) ?></small>
+                            </td>
+                            <td>C$ <?= number_format($sesion['apertura']['Monto'], 2) ?></td>
+                            <td>
+                                <?= count($sesion['ventas']) ?> venta(s)<br>
+                                <small class="text-muted">
+                                    <?php 
+                                    $totalSesion = 0;
+                                    foreach ($sesion['ventas'] as $v) { $totalSesion += (float)$v['Monto']; }
+                                    ?>
+                                    Total: C$ <?= number_format($totalSesion, 2) ?>
+                                </small>
+                            </td>
+                            <td>
+                                <?php if ($sesion['cierre']): ?>
+                                    <?= date('d/m/Y H:i:s', strtotime($sesion['cierre']['Fecha_Hora'])) ?>
+                                <?php else: ?>
+                                    <span class="badge bg-warning text-dark">En curso</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if ($sesion['cierre']): ?>
+                                    <strong class="text-success">C$ <?= number_format($sesion['cierre']['Monto'], 2) ?></strong>
+                                <?php else: ?>
+                                    <span class="text-muted">-</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if ($sesion['cierre']): ?>
+                                    <a href="<?= BASE_URL ?>imprimir_ticket_cierre.php?fecha=<?= urlencode($fecha) ?>&cierre_ts=<?= urlencode($sesion['cierre']['Fecha_Hora']) ?>" 
+                                       class="btn btn-primary btn-sm" 
+                                       target="_blank">
+                                        <i class="bi bi-printer"></i> Reimprimir
+                                    </a>
+                                <?php else: ?>
+                                    <span class="text-muted small">No cerrado</span>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <h5 class="mb-3">Detalle de Ventas</h5>
     <?php if ($ventas && count($ventas) > 0): ?>

@@ -339,7 +339,7 @@ class TicketHelper {
         return $out;
     }
     // Generar ticket de cierre de caja - ventas diarias
-    public static function generarTicketCierreCaja($restaurante, $fechaInicio, $fechaFin, $totalEfectivo, $totalTarjeta, $totalVentas, $totalServicio, $totalGeneral, $empleado, $ticketId, $moneda) {
+    public static function generarTicketCierreCaja($restaurante, $fechaInicio, $fechaFin, $totalEfectivo, $totalTarjeta, $totalVentas, $totalServicio, $totalGeneral, $empleado, $ticketId, $moneda, $apertura = 0, $egresos = 0, $cierreMonto = 0) {
         // Obtener configuración dinámica
         $config = self::getConfig();
         
@@ -360,12 +360,31 @@ class TicketHelper {
         $out .= "Desde: $fechaInicio\n";
         $out .= "Hasta: $fechaFin\n";
         $out .= str_repeat('-', $maxWidth) . "\n";
+        
+        // Datos de caja para cuadre
+        $out .= str_pad('APERTURA CAJA:', 26) . str_pad($moneda . number_format($apertura, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        $out .= str_pad('Efectivo Ventas:', 26) . str_pad($moneda . number_format($totalEfectivo, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        if ($egresos > 0) {
+            $out .= str_pad('Egresos:', 26) . str_pad($moneda . number_format($egresos, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        }
+        $efectivoEntregar = $apertura + $totalEfectivo - $egresos;
+        $out .= str_repeat('-', $maxWidth) . "\n";
+        $out .= str_pad('EFECTIVO ENTREGAR:', 26) . str_pad($moneda . number_format($efectivoEntregar, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        if ($cierreMonto > 0) {
+            $out .= str_repeat('=', $maxWidth) . "\n";
+            $out .= str_pad('CIERRE REGISTRADO:', 26) . str_pad($moneda . number_format($cierreMonto, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+            $diferencia = $cierreMonto - $efectivoEntregar;
+            $out .= str_pad('DIFERENCIA:', 26) . str_pad($moneda . number_format($diferencia, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        }
+        $out .= str_repeat('=', $maxWidth) . "\n";
+        
+        // Resumen de ventas
+        $out .= "RESUMEN DE VENTAS:\n";
         $out .= str_pad('Total Efectivo:', 26) . str_pad($moneda . number_format($totalEfectivo, 2), 8, ' ', STR_PAD_LEFT) . "\n";
         $out .= str_pad('Total Tarjeta:', 26) . str_pad($moneda . number_format($totalTarjeta, 2), 8, ' ', STR_PAD_LEFT) . "\n";
         if($totalServicio>0){
             $out .= str_pad('Total Servicio:', 26) . str_pad($moneda . number_format($totalServicio, 2), 8, ' ', STR_PAD_LEFT) . "\n";
         }
-        $out .= str_repeat('-', $maxWidth) . "\n";
         $out .= str_pad('Total Ventas:', 26) . str_pad($moneda . number_format($totalVentas, 2), 8, ' ', STR_PAD_LEFT) . "\n";
         $out .= str_repeat('=', $maxWidth) . "\n";
         $out .= str_pad('TOTAL GENERAL:', 26) . str_pad($moneda . number_format($totalGeneral, 2), 8, ' ', STR_PAD_LEFT) . "\n";

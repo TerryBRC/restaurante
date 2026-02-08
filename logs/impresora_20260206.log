@@ -1,0 +1,4 @@
+[2026-02-06 00:38:25] [INFO] [::1] Iniciando impresión [directo]: 'POSPrinter POS-80(Copy 1)' - 933 bytes
+[2026-02-06 00:38:25] [INFO] [::1] Conectando a impresora: POSPrinter POS-80(Copy 1)
+[2026-02-06 00:38:25] [INFO] [::1] Enviando contenido a impresora
+[2026-02-06 00:38:25] [SUCCESS] [::1] Impresión completada exitosamente [directo]
