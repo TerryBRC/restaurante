@@ -104,4 +104,95 @@ class ReporteModel {
         $stmt->execute($idsVentas);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Obtiene datos para el reporte de cierre de caja (pre-cierre)
+     * @return array ['monto_apertura', 'total_efectivo', 'total_tarjeta', 'total_ventas', 'total_ingresos', 'total_egresos']
+     */
+    public function obtenerReporteCierreCaja() {
+        $conn = (new Database())->connect();
+        
+        // 1. Obtener monto de apertura desde la última apertura
+        $stmt = $conn->query("SELECT Monto FROM movimientos WHERE Tipo='Apertura' ORDER BY ID_Movimiento DESC LIMIT 1");
+        $apertura = $stmt->fetch(PDO::FETCH_ASSOC);
+        $monto_apertura = $apertura ? floatval($apertura['Monto']) : 0;
+        
+        // 2. Obtener fecha de la última apertura para filtrar ventas
+        $stmt = $conn->query("SELECT Fecha_Hora FROM movimientos WHERE Tipo='Apertura' ORDER BY ID_Movimiento DESC LIMIT 1");
+        $fechaApertura = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // 3. Obtener ventas desde la última apertura (solo pagadas)
+        if ($fechaApertura) {
+            $stmt = $conn->prepare("
+                SELECT
+                    Metodo_Pago,
+                    COUNT(*) as cantidad,
+                    SUM(Total) as total_ventas,
+                    SUM(Servicio) as total_servicio
+                FROM ventas
+                WHERE Fecha_Hora >= ?
+                    AND Estado = 'Pagada'
+                GROUP BY Metodo_Pago
+            ");
+            $stmt->execute([$fechaApertura['Fecha_Hora']]);
+            $ventasPorMetodo = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } else {
+            $ventasPorMetodo = [];
+        }
+        
+        // 4. Calcular totales por método de pago
+        $total_efectivo = 0;
+        $total_tarjeta = 0;
+        $total_ventas = 0;
+        
+        foreach ($ventasPorMetodo as $venta) {
+            $monto = floatval($venta['total_ventas']) + floatval($venta['total_servicio']);
+            $total_ventas += $monto;
+            
+            if (stripos($venta['Metodo_Pago'], 'efectivo') !== false) {
+                $total_efectivo += $monto;
+            } elseif (stripos($venta['Metodo_Pago'], 'tarjeta') !== false || stripos($venta['Metodo_Pago'], 'card') !== false) {
+                $total_tarjeta += $monto;
+            }
+        }
+        
+        // 5. Obtener ingresos (que no sean apertura o cierre) desde la última apertura
+        if ($fechaApertura) {
+            $stmt = $conn->prepare("
+                SELECT SUM(Monto) as total
+                FROM movimientos
+                WHERE Tipo = 'Ingreso'
+                    AND Fecha_Hora >= ?
+            ");
+            $stmt->execute([$fechaApertura['Fecha_Hora']]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            $total_ingresos = $row ? floatval($row['total']) : 0;
+        } else {
+            $total_ingresos = 0;
+        }
+        
+        // 6. Obtener egresos desde la última apertura
+        if ($fechaApertura) {
+            $stmt = $conn->prepare("
+                SELECT SUM(Monto) as total
+                FROM movimientos
+                WHERE Tipo = 'Egreso'
+                    AND Fecha_Hora >= ?
+            ");
+            $stmt->execute([$fechaApertura['Fecha_Hora']]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            $total_egresos = $row ? floatval($row['total']) : 0;
+        } else {
+            $total_egresos = 0;
+        }
+        
+        return [
+            'monto_apertura' => $monto_apertura,
+            'total_efectivo' => $total_efectivo,
+            'total_tarjeta' => $total_tarjeta,
+            'total_ventas' => $total_ventas,
+            'total_ingresos' => $total_ingresos,
+            'total_egresos' => $total_egresos
+        ];
+    }
 }

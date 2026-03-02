@@ -260,8 +260,7 @@
                             <td>
                                 <?php if ($sesion['cierre']): ?>
                                     <a href="<?= BASE_URL ?>imprimir_ticket_cierre.php?fecha=<?= urlencode($fecha) ?>&cierre_ts=<?= urlencode($sesion['cierre']['Fecha_Hora']) ?>" 
-                                       class="btn btn-primary btn-sm" 
-                                       target="_blank">
+                                       class="btn btn-primary btn-sm">
                                         <i class="bi bi-printer"></i> Reimprimir
                                     </a>
                                 <?php else: ?>

@@ -47,7 +47,7 @@ if ($msg = Session::get('flash_error')) {
             </tbody>
         </table>
     </div>
-    <form method="post" action="<?= BASE_URL ?>reportes/imprimir_ticket_productos_vendidos" target="_blank" class="mt-3">
+    <form method="post" action="<?= BASE_URL ?>reportes/imprimir_ticket_productos_vendidos" class="mt-3">
         <input type="hidden" name="fecha" value="<?= htmlspecialchars($fecha) ?>">
         <button type="submit" class="btn btn-success">
             <i class="bi bi-printer"></i> Imprimir ticket
