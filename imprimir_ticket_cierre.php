@@ -243,7 +243,10 @@ $ticket = TicketHelper::generarTicketCierreCaja(
     $moneda,
     $apertura,
     $egresos,
-    $cierreMonto
+    $cierreMonto,
+    $totalesPago['Transferencia'],  // Total transferencia
+    $ingresos,                       // Ingresos adicionales
+    $totalesCambio                   // Cambio dado
 );
 
 // Imprimir usando la impresora designada para cierre

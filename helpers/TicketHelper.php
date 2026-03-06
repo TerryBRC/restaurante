@@ -339,7 +339,7 @@ class TicketHelper {
         return $out;
     }
     // Generar ticket de cierre de caja - ventas diarias
-    public static function generarTicketCierreCaja($restaurante, $fechaInicio, $fechaFin, $totalEfectivo, $totalTarjeta, $totalVentas, $totalServicio, $totalGeneral, $empleado, $ticketId, $moneda, $apertura = 0, $egresos = 0, $cierreMonto = 0) {
+    public static function generarTicketCierreCaja($restaurante, $fechaInicio, $fechaFin, $totalEfectivo, $totalTarjeta, $totalVentas, $totalServicio, $totalGeneral, $empleado, $ticketId, $moneda, $apertura = 0, $egresos = 0, $cierreMonto = 0, $totalTransferencia = 0, $ingresos = 0, $totalCambio = 0) {
         // Obtener configuración dinámica
         $config = self::getConfig();
         
@@ -361,34 +361,76 @@ class TicketHelper {
         $out .= "Hasta: $fechaFin\n";
         $out .= str_repeat('-', $maxWidth) . "\n";
         
-        // Datos de caja para cuadre
-        $out .= str_pad('APERTURA CAJA:', 26) . str_pad($moneda . number_format($apertura, 2), 8, ' ', STR_PAD_LEFT) . "\n";
-        $out .= str_pad('Efectivo Ventas:', 26) . str_pad($moneda . number_format($totalEfectivo, 2), 8, ' ', STR_PAD_LEFT) . "\n";
-        if ($egresos > 0) {
-            $out .= str_pad('Egresos:', 26) . str_pad($moneda . number_format($egresos, 2), 8, ' ', STR_PAD_LEFT) . "\n";
-        }
-        $efectivoEntregar = $apertura + $totalEfectivo - $egresos;
+        // ========== SECCIÓN DE CAJA PARA CUADRE ==========
+        $out .= "*** DATOS DE CAJA ***\n";
+        $out .= str_pad('Monto Apertura:', 26) . str_pad($moneda . number_format($apertura, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        $out .= str_pad('Ingresos Extra:', 26) . str_pad($moneda . number_format($ingresos, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        $out .= str_pad('Egresos:', 26) . str_pad($moneda . number_format($egresos, 2), 8, ' ', STR_PAD_LEFT) . "\n";
         $out .= str_repeat('-', $maxWidth) . "\n";
-        $out .= str_pad('EFECTIVO ENTREGAR:', 26) . str_pad($moneda . number_format($efectivoEntregar, 2), 8, ' ', STR_PAD_LEFT) . "\n";
-        if ($cierreMonto > 0) {
-            $out .= str_repeat('=', $maxWidth) . "\n";
-            $out .= str_pad('CIERRE REGISTRADO:', 26) . str_pad($moneda . number_format($cierreMonto, 2), 8, ' ', STR_PAD_LEFT) . "\n";
-            $diferencia = $cierreMonto - $efectivoEntregar;
-            $out .= str_pad('DIFERENCIA:', 26) . str_pad($moneda . number_format($diferencia, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        
+        // ========== DETALLE DE VENTAS POR MÉTODO DE PAGO ==========
+        $out .= "*** VENTAS POR MÉTODO ***\n";
+        $out .= str_pad('Efectivo:', 26) . str_pad($moneda . number_format($totalEfectivo, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        $out .= str_pad('Tarjeta:', 26) . str_pad($moneda . number_format($totalTarjeta, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        $out .= str_pad('Transferencia:', 26) . str_pad($moneda . number_format($totalTransferencia, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        $out .= str_repeat('-', $maxWidth) . "\n";
+        $out .= str_pad('Total Ventas:', 26) . str_pad($moneda . number_format($totalVentas, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        
+        // Calcular el cambio dado para restarlo del efectivo
+        $efectivoNeto = $totalEfectivo - $totalCambio;
+        if ($totalCambio > 0) {
+            $out .= str_pad('(-) Cambio dado:', 26) . str_pad($moneda . number_format($totalCambio, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+            $out .= str_pad('Efectivo neto:', 26) . str_pad($moneda . number_format($efectivoNeto, 2), 8, ' ', STR_PAD_LEFT) . "\n";
         }
         $out .= str_repeat('=', $maxWidth) . "\n";
         
-        // Resumen de ventas
-        $out .= "RESUMEN DE VENTAS:\n";
-        $out .= str_pad('Total Efectivo:', 26) . str_pad($moneda . number_format($totalEfectivo, 2), 8, ' ', STR_PAD_LEFT) . "\n";
-        $out .= str_pad('Total Tarjeta:', 26) . str_pad($moneda . number_format($totalTarjeta, 2), 8, ' ', STR_PAD_LEFT) . "\n";
-        if($totalServicio>0){
-            $out .= str_pad('Total Servicio:', 26) . str_pad($moneda . number_format($totalServicio, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        // ========== CÁLCULO DEL EFECTIVO ESPERADO ==========
+        $efectivoEsperado = $apertura + $ingresos + $efectivoNeto - $egresos;
+        $out .= "*** EFECTIVO ESPERADO ***\n";
+        $out .= str_pad('Apertura:', 26) . str_pad($moneda . number_format($apertura, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        if ($ingresos > 0) {
+            $out .= str_pad('+ Ingresos:', 26) . str_pad($moneda . number_format($ingresos, 2), 8, ' ', STR_PAD_LEFT) . "\n";
         }
-        $out .= str_pad('Total Ventas:', 26) . str_pad($moneda . number_format($totalVentas, 2), 8, ' ', STR_PAD_LEFT) . "\n";
-        $out .= str_repeat('=', $maxWidth) . "\n";
-        $out .= str_pad('TOTAL GENERAL:', 26) . str_pad($moneda . number_format($totalGeneral, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        $out .= str_pad('+ Efec. Ventas:', 26) . str_pad($moneda . number_format($efectivoNeto, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        if ($egresos > 0) {
+            $out .= str_pad('- Egresos:', 26) . str_pad($moneda . number_format($egresos, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        }
         $out .= str_repeat('-', $maxWidth) . "\n";
+        $out .= str_pad('EFECTIVO ESPERADO:', 26) . str_pad($moneda . number_format($efectivoEsperado, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        $out .= str_repeat('=', $maxWidth) . "\n";
+        
+        // ========== COMPARACIÓN CON CIERRE REGISTRADO ==========
+        if ($cierreMonto > 0) {
+            $out .= "*** CIERRE REGISTRADO ***\n";
+            $out .= str_pad('Monto en caja:', 26) . str_pad($moneda . number_format($cierreMonto, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+            $out .= str_repeat('-', $maxWidth) . "\n";
+            $diferencia = $cierreMonto - $efectivoEsperado;
+            
+            // Mostrar diferencia con contexto claro
+            if (abs($diferencia) < 0.01) {
+                $out .= str_pad('DIFERENCIA:', 26) . str_pad($moneda . '0.00', 8, ' ', STR_PAD_LEFT) . " (CUADRADO)\n";
+            } elseif ($diferencia > 0) {
+                $out .= str_pad('SOBRANTE:', 26) . str_pad($moneda . number_format($diferencia, 2), 8, ' ', STR_PAD_LEFT) . " (+)\n";
+                $out .= "  (Favor de verificar)\n";
+            } else {
+                $out .= str_pad('FALTANTE:', 26) . str_pad($moneda . number_format(abs($diferencia), 2), 8, ' ', STR_PAD_LEFT) . " (-)\n";
+                $out .= "  (Revisar cambio dado)\n";
+            }
+            $out .= str_repeat('=', $maxWidth) . "\n";
+        }
+        
+        // ========== RESUMEN DE SERVICIO ==========
+        if ($totalServicio > 0) {
+            $out .= str_pad('Total Servicio (10%):', 26) . str_pad($moneda . number_format($totalServicio, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+            $out .= str_repeat('-', $maxWidth) . "\n";
+        }
+        
+        // ========== TOTAL GENERAL ==========
+        $out .= str_pad('TOTAL GENERAL:', 26) . str_pad($moneda . number_format($totalGeneral, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+        $out .= str_pad('(Efectivo+Tar+Transf)', 35, ' ', STR_PAD_BOTH) . "\n";
+        $out .= str_repeat('=', $maxWidth) . "\n";
+        
+        // ========== INFORMACIÓN DE CIERRE ==========
         $emp = "$empleado";
         if (mb_strlen($emp) > $maxWidth - 15) {
             $out .= "Cerrado por:\n";
@@ -398,7 +440,7 @@ class TicketHelper {
         }
         $out .= "Ticket: #" . str_pad($ticketId, 6, '0', STR_PAD_LEFT) . "\n";
         $out .= "Fecha: " . date('Y-m-d H:i:s') . "\n";
-        $out .= "¡Gracias por su visita!\n";
+        $out .= "¡Gracias por su trabajo!\n";
         $out .= str_repeat('-', $maxWidth) . "\n";
         return $out;
     }
