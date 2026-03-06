@@ -21,6 +21,7 @@ class TicketHelper {
                 if (isset($dbConfig['ruc'])) $config['ruc'] = $dbConfig['ruc'];
                 if (isset($dbConfig['telefono'])) $config['telefono'] = $dbConfig['telefono'];
                 if (isset($dbConfig['direccion'])) $config['direccion'] = $dbConfig['direccion'];
+                if (isset($dbConfig['servicio'])) $config['servicio'] = $dbConfig['servicio'];
             } catch (Exception $e) {
                 // Mantener valores por defecto
             }
@@ -421,7 +422,11 @@ class TicketHelper {
         
         // ========== RESUMEN DE SERVICIO ==========
         if ($totalServicio > 0) {
-            $out .= str_pad('Total Servicio (10%):', 26) . str_pad($moneda . number_format($totalServicio, 2), 8, ' ', STR_PAD_LEFT) . "\n";
+            $servicioPct = isset($config['servicio']) ? floatval($config['servicio']) : 0;
+            // Si el valor está en formato decimal (0.10), mostrar como porcentaje (10%).
+            $servicioPctLabel = ($servicioPct > 0 && $servicioPct <= 1) ? $servicioPct * 100 : $servicioPct;
+            $servicioLabel = $servicioPct > 0 ? sprintf('Total Servicio (%.2f%%):', $servicioPctLabel) : 'Total Servicio:';
+            $out .= str_pad($servicioLabel, 26) . str_pad($moneda . number_format($totalServicio, 2), 8, ' ', STR_PAD_LEFT) . "\n";
             $out .= str_repeat('-', $maxWidth) . "\n";
         }
         

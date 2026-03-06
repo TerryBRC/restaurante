@@ -113,7 +113,8 @@ class MovimientoModel {
     // Suma de ingresos no ventas: tipo Ingreso y ID_Venta IS NULL
     public function obtenerIngresosNoVentas($fecha = null) {
         try {
-            $sql = "SELECT SUM(Monto) as total FROM movimientos WHERE Tipo = 'Ingreso' AND (ID_Venta IS NULL OR ID_Venta = 0)";
+            // Considerar pedidos como ingresos (no son ventas registradas en la tabla ventas)
+            $sql = "SELECT SUM(Monto) as total FROM movimientos WHERE Tipo IN ('Ingreso','Pedido') AND (ID_Venta IS NULL OR ID_Venta = 0)";
             $params = [];
             if ($fecha) {
                 $sql .= ' AND DATE(Fecha_Hora) = ?';
@@ -134,7 +135,8 @@ class MovimientoModel {
      */
     public function obtenerSaldoActual() {
         try {
-            $stmt = $this->conn->query("SELECT SUM(CASE WHEN Tipo='Ingreso' THEN Monto WHEN Tipo='Apertura' THEN Monto WHEN Tipo='Cierre' THEN 0 ELSE -Monto END) as saldo FROM movimientos");
+            // Tratar los pedidos como ingresos (sumar al saldo), no como egresos
+            $stmt = $this->conn->query("SELECT SUM(CASE WHEN Tipo IN ('Ingreso','Pedido') THEN Monto WHEN Tipo='Apertura' THEN Monto WHEN Tipo='Cierre' THEN 0 ELSE -Monto END) as saldo FROM movimientos");
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             return $row ? floatval($row['saldo']) : 0.0;
         } catch (PDOException $e) {
@@ -162,7 +164,8 @@ class MovimientoModel {
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$row || !$row['id_apertura']) return 0.0;
         $idApertura = (int)$row['id_apertura'];
-        $stmt2 = $this->conn->prepare("SELECT SUM(CASE WHEN Tipo IN ('Ingreso','Apertura') THEN Monto WHEN Tipo='Cierre' THEN 0 ELSE -Monto END) as saldo FROM movimientos WHERE ID_Movimiento >= ?");
+        // Tratar los pedidos registrados en caja como ingresos positivos
+        $stmt2 = $this->conn->prepare("SELECT SUM(CASE WHEN Tipo IN ('Ingreso','Pedido','Apertura') THEN Monto WHEN Tipo='Cierre' THEN 0 ELSE -Monto END) as saldo FROM movimientos WHERE ID_Movimiento >= ?");
         $stmt2->execute([$idApertura]);
         $row2 = $stmt2->fetch(PDO::FETCH_ASSOC);
         return $row2 ? floatval($row2['saldo']) : 0.0;
@@ -177,7 +180,8 @@ class MovimientoModel {
      */
     public function obtenerSaldoFiltrado($tipo = null, $fechaDesde = null, $fechaHasta = null) {
         try {
-            $sql = "SELECT SUM(CASE WHEN m.Tipo IN ('Ingreso','Apertura') THEN m.Monto WHEN m.Tipo='Cierre' THEN 0 ELSE -m.Monto END) as saldo FROM movimientos m WHERE 1=1";
+            // Tratar pedidos como ingresos; todo lo demás (Egreso, etc.) resta del saldo
+            $sql = "SELECT SUM(CASE WHEN m.Tipo IN ('Ingreso','Pedido','Apertura') THEN m.Monto WHEN m.Tipo='Cierre' THEN 0 ELSE -m.Monto END) as saldo FROM movimientos m WHERE 1=1";
             $params = [];
             if ($tipo) {
                 $sql .= ' AND m.Tipo = ?';
