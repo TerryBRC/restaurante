@@ -43,51 +43,49 @@ if ($cierreTimestamp) {
     }
 }
 
-$model = new ReporteModel();
-    // Encontrar la APERTURA y ventas del CIERRE específico
-    // Usar lógica de stack para sesiones anidadas
-    $pilaSesiones = [];
+// Encontrar la APERTURA y ventas del CIERRE específico
+// Usar lógica de stack para sesiones anidadas
+$pilaSesiones = [];
+
+foreach ($todosMovimientos as $mov) {
+    $tipo = $mov['Tipo'];
     
-    foreach ($todosMovimientos as $mov) {
-        $tipo = $mov['Tipo'];
+    if ($tipo === 'Apertura') {
+        // Nueva sesión
+        $pilaSesiones[] = [
+            'apertura' => $mov,
+            'ventas' => [],
+            'egresos' => []
+        ];
         
-        if ($tipo === 'Apertura') {
-            // Nueva sesión
-            $pilaSesiones[] = [
-                'apertura' => $mov,
-                'ventas' => [],
-                'egresos' => []
-            ];
-            
-        } elseif ($tipo === 'Cierre') {
-            // Encontramos un cierre - verificar si es el que buscamos
-            if ($mov['ID_Movimiento'] == $ultimoCierre['ID_Movimiento']) {
-                // Este es el cierre que buscamos, usar esta sesión
-                if (!empty($pilaSesiones)) {
-                    $sesion = end($pilaSesiones);
-                    $apertura = (float)$sesion['apertura']['Monto'];
-                    $idsVentasUltimoCierre = array_column($sesion['ventas'], 'ID_Venta');
-                    foreach ($sesion['egresos'] as $egreso) {
-                        $egresos += (float)$egreso['Monto'];
-                    }
-                }
-                break;
-            } else {
-                // Es otro cierre, cerrar esa sesión
-                if (!empty($pilaSesiones)) {
-                    array_pop($pilaSesiones);
+    } elseif ($tipo === 'Cierre') {
+        // Encontramos un cierre - verificar si es el que buscamos
+        if ($ultimoCierre && $mov['ID_Movimiento'] == $ultimoCierre['ID_Movimiento']) {
+            // Este es el cierre que buscamos, usar esta sesión
+            if (!empty($pilaSesiones)) {
+                $sesion = end($pilaSesiones);
+                $apertura = (float)$sesion['apertura']['Monto'];
+                $idsVentasUltimoCierre = array_column($sesion['ventas'], 'ID_Venta');
+                foreach ($sesion['egresos'] as $egreso) {
+                    $egresos += (float)$egreso['Monto'];
                 }
             }
-            
-        } elseif ($tipo === 'Ingreso' || $tipo === 'Egreso') {
-            // Agregar a la sesión más reciente
+            break;
+        } else {
+            // Es otro cierre, cerrar esa sesión
             if (!empty($pilaSesiones)) {
-                $sesion = &$pilaSesiones[count($pilaSesiones)-1];
-                if ($tipo === 'Ingreso' && !empty($mov['ID_Venta'])) {
-                    $sesion['ventas'][] = $mov;
-                } elseif ($tipo === 'Egreso') {
-                    $sesion['egresos'][] = $mov;
-                }
+                array_pop($pilaSesiones);
+            }
+        }
+        
+    } elseif ($tipo === 'Ingreso' || $tipo === 'Egreso') {
+        // Agregar a la sesión más reciente
+        if (!empty($pilaSesiones)) {
+            $sesion = &$pilaSesiones[count($pilaSesiones)-1];
+            if ($tipo === 'Ingreso' && !empty($mov['ID_Venta'])) {
+                $sesion['ventas'][] = $mov;
+            } elseif ($tipo === 'Egreso') {
+                $sesion['egresos'][] = $mov;
             }
         }
     }
@@ -123,9 +121,6 @@ if ($ventas && count($ventas) > 0) {
                 $metodoRaw = trim($p['Metodo']);
                 $monto = (float)$p['Monto'];
                 if ((int)$p['Es_Cambio'] === 1) {
-                    $sumaCambioRegistrado += $monto;
-                    continue;
-                }
                     $sumaCambioRegistrado += $monto;
                     continue;
                 }
