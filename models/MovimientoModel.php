@@ -113,7 +113,7 @@ class MovimientoModel {
     // Suma de ingresos no ventas: tipo Ingreso y ID_Venta IS NULL
     public function obtenerIngresosNoVentas($fecha = null) {
         try {
-            $sql = "SELECT SUM(Monto) as total FROM movimientos WHERE Tipo = 'Pedido' AND (ID_Venta IS NULL OR ID_Venta = 0)";
+            $sql = "SELECT SUM(Monto) as total FROM movimientos WHERE Tipo = 'Ingreso' AND (ID_Venta IS NULL OR ID_Venta = 0)";
             $params = [];
             if ($fecha) {
                 $sql .= ' AND DATE(Fecha_Hora) = ?';
