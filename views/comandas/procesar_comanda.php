@@ -7,13 +7,8 @@ Session::init();
 Session::checkRole(['Administrador', 'Mesero', 'Cajero']);
 
 header('Content-Type: application/json');
-// DEPURACIÓN: Log de acceso y variables recibidas
-error_log('Acceso a procesar_comanda.php');
-error_log('Método: ' . $_SERVER['REQUEST_METHOD']);
-error_log('POST: ' . print_r($_POST, true));
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    error_log('Método no permitido');
     echo json_encode(['success' => false, 'message' => 'Método no permitido']);
     exit();
 }
@@ -21,7 +16,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once __DIR__ . '/../../helpers/Csrf.php';
 $csrfToken = $_POST['csrf_token'] ?? '';
 if (!Csrf::validateToken($csrfToken)) {
-    error_log('CSRF token inválido: ' . $csrfToken);
     echo json_encode(['success' => false, 'message' => 'CSRF token inválido']);
     exit();
 }
@@ -30,7 +24,6 @@ $idMesa = isset($_POST['id_mesa']) ? (int)$_POST['id_mesa'] : 0;
 $items = isset($_POST['items']) ? json_decode($_POST['items'], true) : [];
 
 if (!$idMesa) {
-    error_log('Datos incompletos: id_mesa=' . $idMesa);
     echo json_encode(['success' => false, 'message' => 'Datos incompletos']);
     exit();
 }
@@ -92,7 +85,6 @@ try {
     echo json_encode(['success' => true, 'message' => 'Comanda procesada exitosamente por ' . $usuario]);
 
 } catch (Exception $e) {
-    error_log('Error en procesar_comanda.php: ' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => $e->getMessage(), 'debug' => $e->getMessage()]);
 }
 // Fin del script

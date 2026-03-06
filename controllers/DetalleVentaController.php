@@ -108,7 +108,6 @@ class DetalleVentaController extends BaseController {
                     $clave = $dest === 'cocina' ? 'impresora_cocina' : 'impresora_barra';
                     @ImpresoraHelper::imprimir($clave, $contenido);
                 } catch (Exception $e) {
-                    error_log('Error al imprimir aviso de eliminación: ' . $e->getMessage());
                 }
                 header('Content-Type: application/json');
                 echo json_encode(['success' => (bool)$result, 'venta' => $ventaActualizada]);

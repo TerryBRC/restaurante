@@ -38,11 +38,6 @@
             return strtotime($a['Fecha_Hora']) - strtotime($b['Fecha_Hora']);
         });
         
-        error_log("[CIERRE_VISTA] Movimientos ordenados: " . count($todosMovimientos));
-        foreach ($todosMovimientos as $m) {
-            error_log("[CIERRE_VISTA] " . $m['ID_Movimiento'] . " | " . $m['Fecha_Hora'] . " | " . $m['Tipo'] . " | " . $m['Monto']);
-        }
-        
         foreach ($todosMovimientos as $mov) {
             $tipo = $mov['Tipo'];
             
@@ -56,14 +51,12 @@
                 ];
                 $pilaSesiones[] = $nuevaSesion;
                 $sesiones[] = &$pilaSesiones[count($pilaSesiones)-1];
-                error_log("[CIERRE_VISTA] Nueva sesión - ID: " . $mov['ID_Movimiento'] . ", Monto: " . $mov['Monto']);
                 
             } elseif ($tipo === 'Cierre') {
                 //Cierre - buscar la sesión abierta más reciente que corresponda
                 if (!empty($pilaSesiones)) {
                     $idx = count($pilaSesiones) - 1;
                     $pilaSesiones[$idx]['cierre'] = $mov;
-                    error_log("[CIERRE_VISTA] Cierre sesión - ID: " . $mov['ID_Movimiento'] . ", Cierre monto: " . $mov['Monto']);
                     array_pop($pilaSesiones);
                 }
                 
@@ -72,7 +65,6 @@
                 if (!empty($pilaSesiones)) {
                     $idx = count($pilaSesiones) - 1;
                     $pilaSesiones[$idx]['ventas'][] = $mov;
-                    error_log("[CIERRE_VISTA] Venta agregada a sesión: ID_Venta=" . $mov['ID_Venta']);
                 }
             } elseif ($tipo === 'Egreso') {
                 if (!empty($pilaSesiones)) {
@@ -80,11 +72,6 @@
                     $pilaSesiones[$idx]['egresos'][] = $mov;
                 }
             }
-        }
-        
-        error_log("[CIERRE_VISTA] Sesiones encontradas: " . count($sesiones));
-        foreach ($sesiones as $i => $s) {
-            error_log("[CIERRE_VISTA] Sesión $i: Apertura=" . $s['apertura']['Monto'] . ", Ventas=" . count($s['ventas']) . ", Cierre=" . ($s['cierre'] ? $s['cierre']['Monto'] : 'NULL'));
         }
     }
     

@@ -34,7 +34,6 @@ class PedidoController extends BaseController {
             $pp = new PagoPedidoModel($db);
             $pagos = $pp->getPagosByPedido($id);
         } catch (Exception $e) {
-            error_log('PedidoController::ver - no se pudieron cargar pagos: ' . $e->getMessage());
         }
 
         $this->render('views/pedidos/ver.php', compact('detalles','id','pedido','pagos'));
@@ -106,7 +105,6 @@ class PedidoController extends BaseController {
             $userId = Session::get('user_id');
             $movModel->registrarMovimiento('Pedido', $totalPedido, $descripcion, $userId, null);
         } catch (Exception $e) {
-            error_log('PedidoController::crear - error al registrar movimiento: ' . $e->getMessage());
             // No fallar la creación del pedido si falla el registro del movimiento
         }
 
@@ -138,7 +136,6 @@ class PedidoController extends BaseController {
                     if ($ok) $printResults['cocina'] = 'printed';
                     else {
                         $printResults['cocina'] = 'failed';
-                        error_log('PedidoController::crear - fallo imprimir comanda cocina para pedido ' . $idPedido);
                     }
                 } else {
                     $printResults['cocina'] = 'empty';
@@ -155,14 +152,12 @@ class PedidoController extends BaseController {
                     if ($ok2) $printResults['barra'] = 'printed';
                     else {
                         $printResults['barra'] = 'failed';
-                        error_log('PedidoController::crear - fallo imprimir comanda barra para pedido ' . $idPedido);
                     }
                 } else {
                     $printResults['barra'] = 'empty';
                 }
             }
         } catch (Exception $e) {
-            error_log('PedidoController::crear - error gen/print comanda: ' . $e->getMessage());
             $printResults['error'] = $e->getMessage();
         }
 
@@ -338,7 +333,6 @@ class PedidoController extends BaseController {
                 exit;
             }
         } catch (Exception $e) {
-            error_log('PedidoController::pagar calcular total error: ' . $e->getMessage());
             http_response_code(500);
             echo json_encode(['success' => false, 'error' => 'Error al calcular totales']);
             exit;
@@ -399,7 +393,6 @@ class PedidoController extends BaseController {
                 exit;
             }
         } catch (Exception $e) {
-            error_log('PedidoController::pagar error: ' . $e->getMessage());
             http_response_code(500);
             echo json_encode(['success' => false, 'error' => 'Error interno']);
             exit;

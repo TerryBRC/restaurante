@@ -15,7 +15,6 @@ class UserModel {
             $stmt->execute([$username]);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log('Error en validateUser: ' . $e->getMessage());
             return false;
         }
     }
@@ -33,7 +32,6 @@ class UserModel {
             $result = $this->conn->query('SELECT @exists AS existe')->fetch(PDO::FETCH_ASSOC);
             return $result['existe'] == 1;
         } catch (PDOException $e) {
-            error_log('Error en checkUserExists: ' . $e->getMessage());
             return false;
         }
     }
@@ -87,7 +85,6 @@ class UserModel {
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log('Error en getAllUsers: ' . $e->getMessage());
             return [];
         }
     }
@@ -99,7 +96,6 @@ class UserModel {
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             return $result ? $result['ID_Empleado'] : null;
         } catch (PDOException $e) {
-            error_log('Error en getEmpleadoIdByUserId: ' . $e->getMessage());
             return null;
         }
     }
@@ -111,7 +107,6 @@ class UserModel {
             $stmt->execute([$userId]);
             return true;
         } catch (PDOException $e) {
-            error_log('Error en deleteUser: ' . $e->getMessage());
             return $e->getMessage();
         }
     }
@@ -128,7 +123,6 @@ class UserModel {
             $stmt->execute([$userId]);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log('Error en getUserById: ' . $e->getMessage());
             return false;
         }
     }
@@ -148,7 +142,6 @@ class UserModel {
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log('Error en getAllUsersPaginated: ' . $e->getMessage());
             return [];
         }
     }
@@ -158,7 +151,6 @@ class UserModel {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             return $row ? (int)$row['total'] : 0;
         } catch (PDOException $e) {
-            error_log('Error en getTotalUsers: ' . $e->getMessage());
             return 0;
         }
     }

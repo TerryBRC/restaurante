@@ -8,13 +8,8 @@ Session::init();
 Session::checkRole(['Administrador', 'Mesero', 'Cajero']);
 
 header('Content-Type: application/json');
-// DEPURACIÓN: Log de acceso y variables recibidas
-error_log('Acceso a agregar_productos_comanda.php');
-error_log('Método: ' . $_SERVER['REQUEST_METHOD']);
-error_log('POST: ' . print_r($_POST, true));
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    error_log('Método no permitido');
     echo json_encode(['success' => false, 'message' => 'Método no permitido']);
     exit();
 }
@@ -22,7 +17,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once __DIR__ . '/../../helpers/Csrf.php';
 $csrfToken = $_POST['csrf_token'] ?? '';
 if (!Csrf::validateToken($csrfToken)) {
-    error_log('CSRF token inválido: ' . $csrfToken);
     echo json_encode(['success' => false, 'message' => 'CSRF token inválido']);
     exit();
 }
@@ -32,7 +26,6 @@ $idVenta = isset($_POST['id_venta']) ? (int)$_POST['id_venta'] : 0;
 $items = isset($_POST['items']) ? json_decode($_POST['items'], true) : [];
 
 if (!$idMesa || !$idVenta || empty($items)) {
-    error_log('Datos incompletos: id_mesa=' . $idMesa . ', id_venta=' . $idVenta . ', items=' . print_r($items, true));
     echo json_encode(['success' => false, 'message' => 'Datos incompletos']);
     exit();
 }
@@ -93,8 +86,6 @@ try {
     echo json_encode(['success' => true, 'message' => 'Productos agregados exitosamente por ' . $usuario]);
 
 } catch (Exception $e) {
-    error_log('Error en agregar_productos_comanda.php: ' . $e->getMessage());
-    error_log('Error en agregar_productos_comanda.php: ' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => $e->getMessage(), 'debug' => $e->getMessage()]);
 }
 ?>

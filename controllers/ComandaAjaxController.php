@@ -206,17 +206,14 @@ class ComandaAjaxController extends BaseController {
                         // Printing moved to central endpoint `comandas/imprimirComanda`
                         // To avoid duplicate prints, do not call ImpresoraHelper here.
                         if (trim($contenidoBarra) !== "\n====== COMANDA BARRA ======\n") {
-                            error_log('ComandaAjaxController: prepared barra content (printing skipped here)');
                             // @ImpresoraHelper::imprimir('impresora_barra', $contenidoBarra);
                         }
                         if (trim($contenidoCocina) !== "\n====== COMANDA COCINA ======\n") {
-                            error_log('ComandaAjaxController: prepared cocina content (printing skipped here)');
                             // @ImpresoraHelper::imprimir('impresora_cocina', $contenidoCocina);
                         }
                     }
                 } catch (Exception $e) {
-                    // No interrumpir el flujo por errores de impresión; se podría loguear
-                    error_log('Error imprimiendo comanda desde agregarProductos: ' . $e->getMessage());
+                    // No interrumpir el flujo por errores de impresión
                 }
 
                 echo json_encode(['success' => true, 'venta' => $ventaActualizada]);
@@ -244,7 +241,6 @@ class ComandaAjaxController extends BaseController {
                 $productos = Validator::get($_POST, 'productos', []);
                 $productos = is_string($productos) ? json_decode($productos, true) : $productos;
                 if ($idMesa === null) {
-                    error_log('ID de mesa no recibido');
                     echo json_encode(['success' => false, 'error' => 'ID de mesa requerido']);
                     exit;
                 }
@@ -253,12 +249,10 @@ class ComandaAjaxController extends BaseController {
                 // Verificar que la mesa existe y está libre
                 $mesa = $mesaModel->getTableById($idMesa);
                 if (!$mesa) {
-                    error_log('Mesa no encontrada: ' . $idMesa);
                     echo json_encode(['success' => false, 'error' => 'Mesa no encontrada']);
                     exit;
                 }
                 if ($mesa['Estado'] != 0) {
-                    error_log('La mesa no está libre: ' . print_r($mesa, true));
                     echo json_encode(['success' => false, 'error' => 'La mesa no está libre']);
                     exit;
                 }

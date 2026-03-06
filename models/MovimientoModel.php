@@ -23,7 +23,6 @@ class MovimientoModel {
             $stmt = $this->conn->prepare('INSERT INTO movimientos (Tipo, Monto, Descripcion, ID_Usuario, ID_Venta) VALUES (?, ?, ?, ?, ?)');
             return $stmt->execute([$tipo, $monto, $descripcion, $idUsuario, $idVenta]);
         } catch (PDOException $e) {
-            error_log('Error en registrarMovimiento: ' . $e->getMessage());
             return false;
         }
     }
@@ -43,7 +42,6 @@ class MovimientoModel {
             $stmt = $conn->prepare('INSERT INTO movimientos (Tipo, Monto, Descripcion, ID_Usuario, ID_Venta) VALUES (?, ?, ?, ?, ?)');
             return $stmt->execute([$tipo, $monto, $descripcion, $idUsuario, $idVenta]);
         } catch (PDOException $e) {
-            error_log('Error en registrarMovimientoConConn: ' . $e->getMessage());
             return false;
         }
     }
@@ -83,7 +81,6 @@ class MovimientoModel {
             $stmt->execute($params);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log('Error en obtenerMovimientos: ' . $e->getMessage());
             return false;
         }
     }
@@ -109,7 +106,6 @@ class MovimientoModel {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             return $row ? (int)$row['total'] : 0;
         } catch (PDOException $e) {
-            error_log('Error en contarMovimientos: ' . $e->getMessage());
             return 0;
         }
     }
@@ -128,7 +124,6 @@ class MovimientoModel {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             return $row ? floatval($row['total']) : 0.0;
         } catch (PDOException $e) {
-            error_log('Error en obtenerIngresosNoVentas: ' . $e->getMessage());
             return 0.0;
         }
     }
@@ -143,7 +138,6 @@ class MovimientoModel {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             return $row ? floatval($row['saldo']) : 0.0;
         } catch (PDOException $e) {
-            error_log('Error en obtenerSaldoActual: ' . $e->getMessage());
             return 0.0;
         }
     }
@@ -202,7 +196,6 @@ class MovimientoModel {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             return $row ? floatval($row['saldo']) : 0.0;
         } catch (PDOException $e) {
-            error_log('Error en obtenerSaldoFiltrado: ' . $e->getMessage());
             return 0.0;
         }
     }
@@ -239,7 +232,6 @@ class MovimientoModel {
                 'movimientos' => $movimientos
             ];
         } catch (PDOException $e) {
-            error_log('Error en obtenerMovimientosDesdeUltimaApertura: ' . $e->getMessage());
             return ['apertura_fecha' => null, 'apertura_monto' => 0.0, 'movimientos' => []];
         }
     }
@@ -253,7 +245,6 @@ class MovimientoModel {
             $stmt = $this->conn->query("SELECT * FROM movimientos WHERE Tipo='Cierre' AND DATE(Fecha_Hora) = CURDATE() ORDER BY ID_Movimiento DESC LIMIT 1");
             return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
         } catch (PDOException $e) {
-            error_log('Error en obtenerUltimoCierreHoy: ' . $e->getMessage());
             return null;
         }
     }

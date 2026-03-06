@@ -20,7 +20,6 @@ class PagoModel {
             $stmt = $this->conn->prepare('INSERT INTO pagos (ID_Venta, Metodo, Monto, Es_Cambio, Fecha_Hora) VALUES (?, ?, ?, ?, NOW())');
             return $stmt->execute([$idVenta, $metodo, $monto, $esCambio ? 1 : 0]);
         } catch (PDOException $e) {
-            error_log('Error registrarPago: ' . $e->getMessage());
             return false;
         }
     }
@@ -31,7 +30,6 @@ class PagoModel {
             $stmt->execute([$idVenta]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log('Error getPagosByVenta: ' . $e->getMessage());
             return false;
         }
     }

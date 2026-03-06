@@ -214,16 +214,13 @@ class MesaController extends BaseController {
                         // Imprimir si hay contenido
                         if (!empty(trim($comandaCocina))) {
                             $ok = ImpresoraHelper::imprimir('impresora_cocina', $comandaCocina);
-                            if (!$ok) error_log('Aviso: fallo al imprimir comanda cocina para traslado venta ' . $idVenta);
                         }
                         if (!empty(trim($comandaBarra))) {
                             $ok2 = ImpresoraHelper::imprimir('impresora_barra', $comandaBarra);
-                            if (!$ok2) error_log('Aviso: fallo al imprimir comanda barra para traslado venta ' . $idVenta);
                         }
                     }
                 }
             } catch (Exception $e) {
-                error_log('Error al generar/mandar avisos tras traslado: ' . $e->getMessage());
             }
         } else {
             echo json_encode(['success' => false, 'error' => $res['error'] ?? 'Error desconocido']);

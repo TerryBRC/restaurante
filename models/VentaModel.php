@@ -30,7 +30,6 @@ class VentaModel {
             }
             return true;
         } catch (PDOException $e) {
-            error_log('Error en dividirCuenta: ' . $e->getMessage());
             return false;
         }
     }
@@ -41,7 +40,6 @@ class VentaModel {
             $stmt->execute([$idDetalle]);
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             if (!$row) {
-                error_log('actualizarCantidadDetalle: detalle no encontrado ID_Detalle=' . $idDetalle);
                 return false;
             }
             $precio = (float)$row['Precio_Venta'];
@@ -49,7 +47,6 @@ class VentaModel {
             $stmt2 = $this->conn->prepare('UPDATE detalle_venta SET Cantidad = ?, Subtotal = ? WHERE ID_Detalle = ?');
             return $stmt2->execute([$nuevaCantidad, $subtotal, $idDetalle]);
         } catch (PDOException $e) {
-            error_log('Error en actualizarCantidadDetalle: ' . $e->getMessage());
             return false;
         }
     }
@@ -58,7 +55,6 @@ class VentaModel {
             $stmt = $this->conn->prepare('DELETE FROM detalle_venta WHERE ID_Detalle = ?');
             return $stmt->execute([$idDetalle]);
         } catch (PDOException $e) {
-            error_log('Error en eliminarDetalle: ' . $e->getMessage());
             return false;
         }
     }
@@ -80,25 +76,15 @@ class VentaModel {
      */
     public function createSale($idCliente, $idMesa, $metodoPago, $idEmpleado) {
         try {
-            // Log de los valores recibidos para depuración
-            error_log('createSale params: idCliente=' . var_export($idCliente, true) . ', idMesa=' . var_export($idMesa, true) . ', metodoPago=' . var_export($metodoPago, true) . ', idEmpleado=' . var_export($idEmpleado, true));
-            // Log temporal para depuración
-            error_log('VentaModel::createSale - mesaId: ' . print_r($idMesa, true));
-            error_log('VentaModel::createSale - empleadoId: ' . print_r($idEmpleado, true));
-            //            error_log('VentaModel::createSale - productos: ' . print_r($productos, true));
             $stmt = $this->conn->prepare('CALL sp_CreateSale(?, ?, ?, ?)');
             $stmt->execute([$idCliente, $idMesa, $metodoPago, $idEmpleado]);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            //            error_log('VentaModel::createSale - productosJson: ' . $productosJson);
-            error_log('createSale result: ' . var_export($result, true));
             if ($result && isset($result['ID_Venta'])) {
                 return $result['ID_Venta'];
             } else {
-                error_log('No se obtuvo ID_Venta al crear la venta.');
                 return false;
             }
         } catch (PDOException $e) {
-            error_log('Error en createSale: ' . $e->getMessage());
             return false;
         }
     }
@@ -156,7 +142,6 @@ class VentaModel {
             return $stmt->execute([$idVenta, $idProducto, $cantidad, $precioVenta]);
         
         } catch (PDOException $e) {
-            error_log('Error en addSaleDetail: ' . $e->getMessage());
             return false;
         }
     }
@@ -178,7 +163,6 @@ class VentaModel {
             $stmt->execute([$idVenta]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log('Error en getSaleDetails: ' . $e->getMessage());
             return false;
         }
     }
@@ -189,7 +173,6 @@ class VentaModel {
             $stmt->execute([$fecha]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log('Error en getDailySales: ' . $e->getMessage());
             return false;
         }
     }
@@ -207,7 +190,6 @@ class VentaModel {
             $stmt->execute([$idVenta]);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log('Error en getVentaById: ' . $e->getMessage());
             return false;
         }
     }
@@ -228,7 +210,6 @@ class VentaModel {
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log('Error en getVentasPendientesCocina: ' . $e->getMessage());
             return false;
         }
     }
@@ -249,7 +230,6 @@ class VentaModel {
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log('Error en getVentasPendientesBarra: ' . $e->getMessage());
             return false;
         }
     }
@@ -263,7 +243,6 @@ class VentaModel {
             );
             return $stmt->execute([$idVenta]);
         } catch (PDOException $e) {
-            error_log('Error en actualizarTotal: ' . $e->getMessage());
             return false;
         }
     }
@@ -335,14 +314,12 @@ class VentaModel {
                 MovimientoModel::registrarMovimientoConConn($this->conn, 'Traslado', 0, $desc, $idUsuario, $idVenta);
             } catch (Exception $e) {
                 // No fatal: solo log
-                error_log('Aviso: no se pudo registrar movimiento de traslado: ' . $e->getMessage());
             }
 
             $this->conn->commit();
             return ['success' => true, 'error' => null, 'origen' => $idMesaOrigen];
         } catch (PDOException $e) {
             if ($this->conn->inTransaction()) $this->conn->rollBack();
-            error_log('Error en trasladarVentaAMesa: ' . $e->getMessage());
             return ['success' => false, 'error' => 'Error en la base de datos', 'origen' => null];
         }
     }
@@ -359,7 +336,6 @@ class VentaModel {
             // Reusar createSale (sp) pasando null para mesa
             return $this->createSale($idCliente, null, $metodoPago, $idEmpleado);
         } catch (Exception $e) {
-            error_log('Error en createDeliverySale: ' . $e->getMessage());
             return false;
         }
     }
@@ -393,7 +369,6 @@ class VentaModel {
             $stmt = $this->conn->prepare('UPDATE ventas SET Estado = ? WHERE ID_Venta = ?');
             return $stmt->execute([$estado, $idVenta]);
         } catch (PDOException $e) {
-            error_log('Error en updateEstado: ' . $e->getMessage());
             return false;
         }
     }
@@ -418,7 +393,6 @@ class VentaModel {
             $stmt->execute([$idMesa]);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log('Error en getVentaActivaByMesa: ' . $e->getMessage());
             return false;
         }
     }

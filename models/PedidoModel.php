@@ -19,7 +19,6 @@ class PedidoModel {
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log('PedidoModel::getAllPedidos error: ' . $e->getMessage());
             return [];
         }
     }
@@ -45,7 +44,6 @@ class PedidoModel {
             $stmt->execute([$fecha]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log('PedidoModel::getPedidosByFecha error: ' . $e->getMessage());
             return [];
         }
     }
@@ -63,7 +61,6 @@ class PedidoModel {
             $stmt->execute([$idPedido]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log('PedidoModel::getPedidoDetalles error: ' . $e->getMessage());
             return [];
         }
     }
@@ -77,7 +74,6 @@ class PedidoModel {
             $stmt->execute([$idPedido]);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log('PedidoModel::getPedido error: ' . $e->getMessage());
             return null;
         }
     }
@@ -118,7 +114,6 @@ class PedidoModel {
             return (int)$idPedido;
         } catch (PDOException $e) {
             if ($this->conn->inTransaction()) $this->conn->rollBack();
-            error_log('PedidoModel::createPedido error: ' . $e->getMessage());
             return false;
         }
     }
@@ -143,7 +138,6 @@ class PedidoModel {
             $stmt->execute([$fechaHora]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log('PedidoModel::getPedidosDesde error: ' . $e->getMessage());
             return [];
         }
     }

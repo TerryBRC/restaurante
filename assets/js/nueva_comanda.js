@@ -108,7 +108,6 @@ function procesarComanda() {
 $(document).ready(function() {
     $.get(window.BASE_URL + 'views/comandas/verificar_procedimiento.php', { nombre: 'sp_CreateSale' }, function(data) {
         if (data.existe) {
-            console.log('El procedimiento almacenado sp_CreateSale existe.');
         } else {
             console.warn('El procedimiento almacenado sp_CreateSale NO existe.');
         }

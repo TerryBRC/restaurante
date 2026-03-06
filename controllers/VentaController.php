@@ -109,8 +109,7 @@ class VentaController extends BaseController {
                     // reflect change locally for calculations
                     $servicio = 0.0;
                 } catch (Exception $e) {
-                    // Non-fatal: log and continue (we'll still calculate without charging service this operation)
-                    error_log('No se pudo actualizar Servicio a 0 para venta ' . $idVenta . ': ' . $e->getMessage());
+                    // Non-fatal: continue
                 }
             }
             // determinar si en esta operacion se cobrará el servicio (checkbox del cajero)
@@ -191,8 +190,7 @@ class VentaController extends BaseController {
                     }
                 }
             } catch (Exception $e) {
-                // Non-fatal: log and continue
-                error_log('Error registrando pagos: ' . $e->getMessage());
+                // Non-fatal: continue
             }
 
             // Llamar a imprimir_ticket.php en segundo plano
@@ -213,7 +211,6 @@ class VentaController extends BaseController {
                 try {
                     $pagoModel->registrarPago($idVenta, 'Cambio', $cambio, true);
                 } catch (Exception $e) {
-                    error_log('Error al registrar cambio: ' . $e->getMessage());
                 }
             }
 

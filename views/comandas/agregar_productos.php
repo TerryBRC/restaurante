@@ -88,30 +88,20 @@ require_once '../../models/VentaModel.php';
 
         // Agregar event listeners cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM cargado. Configurando event listeners...');
-            
-            // Contar las tarjetas de productos encontradas
-            const cards = document.querySelectorAll('.producto-card');
-            console.log('Tarjetas de productos encontradas:', cards.length);
             
             // Agregar listeners a todas las tarjetas de productos
             cards.forEach(card => {
-                console.log('Configurando tarjeta:', card.querySelector('.card-title').textContent);
-                
                 // Usar mousedown en lugar de click para mejor respuesta
                 card.addEventListener('mousedown', function(e) {
                     e.preventDefault(); // Prevenir comportamiento por defecto
                     e.stopPropagation(); // Detener propagación del evento
-                    
-                    console.log('Clic en tarjeta:', this.querySelector('.card-title').textContent);
-                    
+
                     // Añadir clase para feedback visual
                     this.classList.add('clicked');
                     setTimeout(() => this.classList.remove('clicked'), 300);
 
                     try {
                         const productoData = this.dataset.producto;
-                        console.log('Datos del producto (raw):', productoData);
                         const producto = JSON.parse(productoData);
                         agregarProducto(producto);
                     } catch (error) {
@@ -128,14 +118,11 @@ require_once '../../models/VentaModel.php';
             });
 
             // Verificar que los datos de productos están correctamente almacenados
-            cards.forEach(card => {
-                console.log('Datos almacenados en tarjeta:', card.dataset.producto);
-            });
+        });
         });
 
         function agregarProducto(producto) {
             if (!producto || !producto.ID_Producto) {
-                console.error('Producto inválido:', producto);
                 return;
             }
 
@@ -146,19 +133,15 @@ require_once '../../models/VentaModel.php';
             producto.ID_Producto = Number(producto.ID_Producto);
             producto.ID_Categoria = Number(producto.ID_Categoria);
 
-            console.log('Producto recibido:', producto);
             const id = producto.ID_Producto;
-            console.log('ID del producto:', id);
 
             if (!comandaItems[id]) {
-                console.log('Añadiendo nuevo producto al carrito');
                 comandaItems[id] = {
                     ...producto,
                     cantidad: 0
                 };
             }
             comandaItems[id].cantidad++;
-            console.log('Carrito actualizado:', comandaItems);
             actualizarComanda();
         }
 
