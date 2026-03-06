@@ -1,0 +1,16 @@
+[2026-03-05 23:19:25] [INFO] [::1] Iniciando impresión [impresora_barra]: 'POSPrinter POS-80(Copy 1)' - 153 bytes
+[2026-03-05 23:19:25] [INFO] [::1] Conectando a impresora: POSPrinter POS-80(Copy 1)
+[2026-03-05 23:19:25] [INFO] [::1] Enviando contenido a impresora
+[2026-03-05 23:19:25] [SUCCESS] [::1] Impresión completada exitosamente [impresora_barra]
+[2026-03-05 23:19:25] [INFO] [::1] Iniciando impresión [impresora_cocina]: 'POSPrinter POS-80(Copy 1)' - 152 bytes
+[2026-03-05 23:19:25] [INFO] [::1] Conectando a impresora: POSPrinter POS-80(Copy 1)
+[2026-03-05 23:19:25] [INFO] [::1] Enviando contenido a impresora
+[2026-03-05 23:19:25] [SUCCESS] [::1] Impresión completada exitosamente [impresora_cocina]
+[2026-03-05 23:19:44] [INFO] [::1] Iniciando impresión [impresora_barra]: 'POSPrinter POS-80(Copy 1)' - 153 bytes
+[2026-03-05 23:19:44] [INFO] [::1] Conectando a impresora: POSPrinter POS-80(Copy 1)
+[2026-03-05 23:19:44] [INFO] [::1] Enviando contenido a impresora
+[2026-03-05 23:19:44] [SUCCESS] [::1] Impresión completada exitosamente [impresora_barra]
+[2026-03-05 23:28:30] [INFO] [::1] Iniciando impresión [impresora_cocina]: 'POSPrinter POS-80(Copy 1)' - 261 bytes
+[2026-03-05 23:28:30] [INFO] [::1] Conectando a impresora: POSPrinter POS-80(Copy 1)
+[2026-03-05 23:28:30] [INFO] [::1] Enviando contenido a impresora
+[2026-03-05 23:28:30] [SUCCESS] [::1] Impresión completada exitosamente [impresora_cocina]

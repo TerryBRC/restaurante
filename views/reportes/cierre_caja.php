@@ -170,8 +170,7 @@
                         <tr><th>Apertura de Caja</th><td class="text-end">C$ <?= number_format($apertura, 2) ?></td></tr>
                         <tr><th>Pedidos</th><td class="text-end">C$ <?= number_format($ingresos, 2) ?></td></tr>
                         <tr><th>Egresos</th><td class="text-end">C$ <?= number_format($egresos, 2) ?></td></tr>
-                        <tr class="table-info"><th>Efectivo por Ventas</th><td class="text-end">C$ <?= number_format($totalesPago['Efectivo'], 2) ?></td></tr>
-                        <tr class="table-info"><th>Cambio entregado</th><td class="text-end">C$ <?= number_format($totalesCambio, 2) ?></td></tr>
+ <!--                        <tr class="table-info"><th>Efectivo por Ventas</th><td class="text-end">C$ <= number_format($totalesPago['Efectivo'], 2) ?></td></tr>-->
                         <tr class="table-success fw-bold"><th>Efectivo a Entregar</th><td class="text-end">C$ <?= number_format($efectivoEntregar, 2) ?></td></tr>
                     </table>
                 </div>
@@ -183,6 +182,7 @@
                 <div class="card-body">
                     <table class="table table-sm">
                         <tr><th>Efectivo</th><td class="text-end">C$ <?= number_format($totalesPago['Efectivo'], 2) ?></td></tr>
+                        <tr class="table-info"><th>Cambio entregado</th><td class="text-end">C$ <?= number_format($totalesCambio, 2) ?></td></tr> 
                         <tr><th>Tarjeta</th><td class="text-end">C$ <?= number_format($totalesPago['Tarjeta'], 2) ?></td></tr>
                         <tr><th>Transferencia</th><td class="text-end">C$ <?= number_format($totalesPago['Transferencia'], 2) ?></td></tr>
                         <tr><th>Otro</th><td class="text-end">C$ <?= number_format($totalesPago['Otro'], 2) ?></td></tr>
